@@ -1,0 +1,60 @@
+cabal-version:   3.4
+name:            kotiba
+version:         0.1.0.0
+homepage:        https://example.com
+license:         AGPL-3.0-or-later
+license-file:    LICENSE
+author:          lambdajon
+maintainer:      lambdajon42@gmail.com
+category:        Network
+build-type:      Simple
+extra-doc-files: CHANGELOG.md
+
+common warnings
+  ghc-options: -Wall -Wunused-imports
+
+library
+  import:           warnings
+  hs-source-dirs:   src
+  exposed-modules:  Kotiba.Api
+                    Kotiba.Server
+  build-depends:
+      base          
+    , servant-server 
+    , warp          
+    , wai           
+    , text           
+    , aeson         
+  default-language: GHC2024
+  default-extensions:
+    BlockArguments
+    DataKinds
+    DeriveAnyClass
+    DerivingStrategies
+    ImplicitParams
+    ImportQualifiedPost
+    LambdaCase
+    OverloadedRecordDot
+    OverloadedStrings
+    RecordWildCards
+
+executable kotiba
+  import:           warnings
+  main-is:          Main.hs
+  hs-source-dirs:   app
+  build-depends:
+      base   
+    , kotiba
+  default-language: GHC2021
+
+test-suite kotiba-test
+  import:           warnings
+  type:             exitcode-stdio-1.0
+  main-is:          Main.hs
+  hs-source-dirs:   test
+  build-depends:
+      base   
+    , kotiba
+    , hspec 
+    , hspec-wai 
+  default-language: GHC2021
