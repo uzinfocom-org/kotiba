@@ -1,6 +1,5 @@
-module Kotiba.Api (API, api) where
+module Kotiba.API (API, api) where
 
-import Data.Proxy (Proxy (..))
 import Data.Text (Text)
 import Servant
 

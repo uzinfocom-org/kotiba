@@ -3,7 +3,7 @@
 module Kotiba.Server (mkApp, runServer) where
 
 import Data.Text (Text)
-import Kotiba.Api
+import Kotiba.API
 import Network.Wai.Handler.Warp (Port, run)
 import Servant
 

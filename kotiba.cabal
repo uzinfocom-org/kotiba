@@ -1,7 +1,7 @@
 cabal-version:   3.4
 name:            kotiba
 version:         0.1.0.0
-homepage:        https://example.com
+homepage:        https://kotiba.app.xinux.uz
 license:         AGPL-3.0-or-later
 license-file:    LICENSE
 author:          lambdajon
@@ -16,8 +16,9 @@ common warnings
 library
   import:           warnings
   hs-source-dirs:   src
-  exposed-modules:  Kotiba.Api
-                    Kotiba.Server
+  exposed-modules:  
+    Kotiba.API
+    Kotiba.Server
   build-depends:
       base          
     , servant-server 
