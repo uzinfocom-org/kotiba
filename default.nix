@@ -34,15 +34,17 @@
       !(lib.hasSuffix ".nix" baseName);
   };
 
-  mkDerivation.buildInputs = (with config.deps; [
-    zlib
-    bzip2
-    bzip2.dev
-    libzip
-    libpq
-  ]) ++ (with pkgs; [
-    git
-  ]);
+  mkDerivation.buildInputs =
+    (with config.deps; [
+      zlib
+      bzip2
+      bzip2.dev
+      libzip
+      libpq
+    ])
+    ++ (with pkgs; [
+      git
+    ]);
 
   mkDerivation.nativeBuildInputs = [
     config.deps.pkg-config

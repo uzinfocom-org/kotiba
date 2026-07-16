@@ -28,7 +28,7 @@
       };
     });
 
-devShells = eachSystem (system: let
+    devShells = eachSystem (system: let
       pkgs = nixpkgs.legacyPackages.${system};
       hp = pkgs.haskell.packages.ghc912;
     in {
@@ -55,7 +55,8 @@ devShells = eachSystem (system: let
           statix
           deadnix
           treefmt
-          
+          alejandra
+
           jq
           just
         ];
@@ -71,7 +72,6 @@ devShells = eachSystem (system: let
 
         NIX_CONFIG = "extra-experimental-features = nix-command flakes";
       };
-      
     });
   };
 }

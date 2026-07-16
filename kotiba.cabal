@@ -14,19 +14,79 @@ common warnings
   ghc-options: -Wall -Wunused-imports
 
 library
-  import:           warnings
-  hs-source-dirs:   src
-  exposed-modules:  
+  import:             warnings
+  hs-source-dirs:     src
+  exposed-modules:
+    Forgejo
+    Forgejo.API
+    Forgejo.API.CommitStatus
+    Forgejo.API.OrgMembers
+    Forgejo.API.PullRequest
+    Forgejo.App
+    Forgejo.Methods.CommitStatus
+    Forgejo.Methods.OrgMembers
+    Forgejo.Methods.PullRequest
+    Forgejo.Types.ActionRun
+    Forgejo.Types.Comment
+    Forgejo.Types.Commit
+    Forgejo.Types.Common
+    Forgejo.Types.Event
+    Forgejo.Types.EventType
+    Forgejo.Types.Issue
+    Forgejo.Types.IssueComment
+    Forgejo.Types.PullRequest
+    Forgejo.Types.Push
+    Forgejo.Types.Repository
+    Forgejo.Types.User
+    Forgejo.Update
+    Forgejo.Webhook
+    Kotiba
     Kotiba.API
+    Kotiba.API.Util
+    Kotiba.Config
+    Kotiba.Database
+    Kotiba.Prelude
     Kotiba.Server
+
   build-depends:
-      base          
-    , servant-server 
-    , warp          
-    , wai           
-    , text           
-    , aeson         
-  default-language: GHC2024
+    , aeson
+    , base
+    , bytestring
+    , conduit
+    , conduit-combinators
+    , containers
+    , esqueleto
+    , filepath
+    , generic-lens
+    , http-api-data
+    , http-client-tls
+    , http-media
+    , http-types
+    , lens
+    , monad-logger
+    , mtl
+    , named
+    , optparse-generic
+    , path-pieces
+    , persistent
+    , persistent-postgresql
+    , resource-pool
+    , safe-exceptions
+    , servant-client
+    , servant-client-core
+    , servant-server
+    , stm
+    , text
+    , time
+    , toml-parser
+    , transformers
+    , uuid
+    , vector
+    , wai
+    , wai-extra
+    , warp
+
+  default-language:   GHC2024
   default-extensions:
     BlockArguments
     DataKinds
@@ -36,16 +96,17 @@ library
     ImportQualifiedPost
     LambdaCase
     OverloadedRecordDot
-    OverloadedStrings
     RecordWildCards
 
 executable kotiba
   import:           warnings
+  ghc-options:      -threaded -rtsopts -with-rtsopts=-N
   main-is:          Main.hs
   hs-source-dirs:   app
   build-depends:
-      base   
+    , base
     , kotiba
+
   default-language: GHC2021
 
 test-suite kotiba-test
@@ -54,8 +115,9 @@ test-suite kotiba-test
   main-is:          Main.hs
   hs-source-dirs:   test
   build-depends:
-      base   
+    , base
+    , hspec
+    , hspec-wai
     , kotiba
-    , hspec 
-    , hspec-wai 
+
   default-language: GHC2021

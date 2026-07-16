@@ -1,23 +1,62 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Kotiba.Server (mkApp, runServer) where
+module Kotiba.Server (run) where
 
-import Data.Text (Text)
+import Control.Exception (SomeException, catch)
+import Control.Monad.Logger (runStdoutLoggingT)
+import Data.Text qualified as T
+import Data.Text.Encoding (encodeUtf8)
+import Database.Persist.Postgresql (createPostgresqlPool)
+import Forgejo.App (mkAppEnv)
 import Kotiba.API
-import Network.Wai.Handler.Warp (Port, run)
+import Kotiba.Config
+import Kotiba.Prelude
+import Network.HTTP.Client.TLS (newTlsManager)
+import Network.HTTP.Types (hContentType, status500)
+import Network.Wai (responseLBS)
+import Network.Wai.Handler.Warp (defaultSettings, runSettings, setHost, setPort)
+import Options.Generic
 import Servant
+import Servant.Client (mkClientEnv, parseBaseUrl)
+import System.IO (BufferMode (..), hSetBuffering, stderr, stdout)
+import Toml.Schema.Matcher (Result (..))
 
-mkApp :: Application
-mkApp = serve api server
+type Options :: Type -> Type
+newtype Options w = Options
+  { cfg :: w ::: FilePath <?> "Config file path" <#> "c"
+  }
+  deriving stock (Generic)
 
-server :: Server API
-server = handleHealth 
+deriving anyclass instance ParseRecord (Options Wrapped)
+deriving stock instance Show (Options Unwrapped)
 
-handleHealth :: Handler Text
-handleHealth = return "OK"
+catchExceptions :: Application -> Application
+catchExceptions app req res =
+  app req res `catch` \(ex :: SomeException) -> do
+    print $ "Unhandled exception: " <> show ex
+    res
+      $ responseLBS
+        status500
+        [(hContentType, "application/json")]
+        mempty
 
+run :: IO ()
+run = do
+  hSetBuffering stdout LineBuffering
+  hSetBuffering stderr LineBuffering
+  (op :: Options Unwrapped) <- unwrapRecord "Kotiba application"
+  putStrLn "Application ready to start"
 
-runServer :: Port -> IO ()
-runServer port = do
-  putStrLn $ "Listening on port " <> show port
-  run port mkApp
+  cn <- loadConfig op.cfg
+  case cn of
+    Success _ c -> do
+      pool <- runStdoutLoggingT $ createPostgresqlPool (encodeUtf8 c.database) c.databasePoolSize
+      manager <- newTlsManager
+      baseUrl <- parseBaseUrl (T.unpack c.forgejoUrl)
+      let cenv = mkClientEnv manager baseUrl
+      let st = MkAppSt{config = c, db = pool, forgejo = mkAppEnv cenv ("token " <> c.forgejoToken)}
+      let settings = setPort c.port $ setHost "*" defaultSettings
+      migrate' st
+      let ?st = st
+      runSettings settings (catchExceptions runApi)
+    Failure _ -> putStrLn "Failed to load config"

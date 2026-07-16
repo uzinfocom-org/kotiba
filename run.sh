@@ -1,0 +1,1 @@
+cabal run -- kotiba --cfg="./config.toml"
