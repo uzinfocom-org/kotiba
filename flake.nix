@@ -30,35 +30,42 @@
 
     devShells = eachSystem (system: let
       pkgs = nixpkgs.legacyPackages.${system};
-      hp = pkgs.haskell.packages.ghc912;
+      # hp = pkgs.haskell.packages.ghc912;
+      hlib = pkgs.haskell.lib;
+      hp = pkgs.haskell.packages."ghc912".override {
+        overrides = self: super: {
+          brick = hlib.dontCheck (hlib.doJailbreak super.brick);
+          # cabal-install = hlib.dontCheck (hlib.doJailbreak super.cabal-install);
+        };
+      };
     in {
       default = pkgs.mkShell {
-        nativeBuildInputs = with pkgs; [
-          cabal-install
+        nativeBuildInputs = [
+          pkgs.cabal-install
           hp.ghc
           hp.haskell-language-server
           hp.fourmolu
           hp.hlint
           hp.ghcid
           hp.implicit-hie
-          haskellPackages.cabal-fmt
-          pkg-config
-          zlib
-          zlib.dev
-          bzip2
-          bzip2.dev
-          libzip
-          libpq
-          libpq.dev
+          pkgs.haskellPackages.cabal-fmt
+          pkgs.pkg-config
+          pkgs.zlib
+          pkgs.zlib.dev
+          pkgs.bzip2
+          pkgs.bzip2.dev
+          pkgs.libzip
+          pkgs.libpq
+          pkgs.libpq.dev
 
-          nixd
-          statix
-          deadnix
-          treefmt
-          alejandra
+          pkgs.nixd
+          pkgs.statix
+          pkgs.deadnix
+          pkgs.treefmt
+          pkgs.alejandra
 
-          jq
-          just
+          pkgs.jq
+          pkgs.just
         ];
 
         shellHook = ''
