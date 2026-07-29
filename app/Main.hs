@@ -2,7 +2,7 @@
 
 module Main (main) where
 
-import Kotiba.Server (run)
+import Server (run)
 
 main :: IO ()
 main = run

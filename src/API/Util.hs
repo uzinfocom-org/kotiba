@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Kotiba.API.Util where
+module API.Util where
 
 import Control.Monad.Except (ExceptT (..), MonadError (..))
 import Control.Monad.Trans (MonadTrans (..))

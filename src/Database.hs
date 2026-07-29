@@ -5,7 +5,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
-module Kotiba.Database where
+module Database where
 
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Kind (Type)

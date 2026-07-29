@@ -22,17 +22,17 @@ module Kotiba.Prelude
   , migrate'
   ) where
 
+import Config (Config (..))
 import Control.Monad.Error.Class (MonadError (..))
 import Control.Monad.IO.Class (MonadIO (..))
 import Control.Monad.Reader (MonadReader, ReaderT (..), asks, runReaderT)
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Kind (Constraint, Type)
 import Data.Text (Text)
+import Database
 import Database.Persist.Sql (SqlPersistT, runMigration, runSqlPool)
 import Forgejo.App (AppEnv, AppM, runAppM)
 import GHC.Generics (Generic)
-import Kotiba.Config (Config (..))
-import Kotiba.Database
 import Servant (Handler)
 
 data AppSt = MkAppSt

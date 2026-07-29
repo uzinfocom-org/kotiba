@@ -4,10 +4,10 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Kotiba.API where
+module API where
 
+import API.Util (errorFormatters)
 import Forgejo
-import Kotiba.API.Util (errorFormatters)
 import Kotiba.Prelude
 import Servant
 import Servant.Server.Generic

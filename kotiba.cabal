@@ -17,36 +17,12 @@ library
   import:             warnings
   hs-source-dirs:     src
   exposed-modules:
-    Forgejo
-    Forgejo.API
-    Forgejo.API.CommitStatus
-    Forgejo.API.OrgMembers
-    Forgejo.API.PullRequest
-    Forgejo.App
-    Forgejo.Methods.CommitStatus
-    Forgejo.Methods.OrgMembers
-    Forgejo.Methods.PullRequest
-    Forgejo.Types.ActionRun
-    Forgejo.Types.Comment
-    Forgejo.Types.Commit
-    Forgejo.Types.Common
-    Forgejo.Types.Event
-    Forgejo.Types.EventType
-    Forgejo.Types.Issue
-    Forgejo.Types.IssueComment
-    Forgejo.Types.PullRequest
-    Forgejo.Types.Push
-    Forgejo.Types.Repository
-    Forgejo.Types.User
-    Forgejo.Update
-    Forgejo.Webhook
-    Kotiba
-    Kotiba.API
-    Kotiba.API.Util
-    Kotiba.Config
-    Kotiba.Database
+    API
+    API.Util
+    Config
+    Database
     Kotiba.Prelude
-    Kotiba.Server
+    Server
 
   build-depends:
     , aeson
@@ -57,6 +33,7 @@ library
     , containers
     , esqueleto
     , filepath
+    , forgejo
     , generic-lens
     , http-api-data
     , http-client-tls

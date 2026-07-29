@@ -1,6 +1,6 @@
 {-# LANGUAGE DerivingVia #-}
 
-module Kotiba.Config where
+module Config where
 
 import Data.ByteString qualified as BS
 import Data.Kind (Type)

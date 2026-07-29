@@ -1,15 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Kotiba.Server (run) where
+module Server (run) where
 
+import API
+import Config
 import Control.Exception (SomeException, catch)
 import Control.Monad.Logger (runStdoutLoggingT)
 import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
 import Database.Persist.Postgresql (createPostgresqlPool)
 import Forgejo.App (mkAppEnv)
-import Kotiba.API
-import Kotiba.Config
 import Kotiba.Prelude
 import Network.HTTP.Client.TLS (newTlsManager)
 import Network.HTTP.Types (hContentType, status500)
