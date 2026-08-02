@@ -1,75 +1,96 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# OPTIONS_GHC -Wno-orphans #-}
 
 module Database where
 
-import Data.Aeson (FromJSON, ToJSON)
-import Data.Kind (Type)
-import Data.Pool (Pool)
-import Data.Text (Text)
-import Data.Text.Encoding (decodeUtf8)
-import Data.UUID (UUID)
-import Data.UUID qualified as UUID
-import Database.Esqueleto.Experimental
-import Database.Persist.TH
-import GHC.Generics (Generic)
-import Web.PathPieces (PathPiece (..))
+import Data.Maybe (listToMaybe)
+import Database.Esqueleto (Entity, runMigration)
+import Database.Persist (Key, PersistEntity, PersistEntityBackend, (==.))
+import Database.Persist qualified as DB
+import Database.Persist.Sql (SqlBackend, SqlPersistT, runSqlPool)
+import Database.Types (EntityField (UserFrId, UserRole), RoleId, User, migrateAll)
+import Forgejo.Types.Common qualified as FR
+import Kotiba.Prelude
 
-instance PersistField UUID where
-  toPersistValue = PersistText . UUID.toText
-  fromPersistValue = \case
-    PersistText t -> parseUUID t
-    PersistLiteral_ _ bs -> parseUUID $ decodeUtf8 bs
-    PersistByteString bs -> parseUUID $ decodeUtf8 bs
-    _ -> Left "Expected PersistText or PersistLiteral for UUID"
-   where
-    parseUUID = maybe (Left "Invalid UUID") Right . UUID.fromText
+withPoolDB :: (AppState, MonadIO m) => SqlPersistT IO a -> m a
+withPoolDB q = liftIO $ runSqlPool q ?st.db
 
-instance PersistFieldSql UUID where
-  sqlType _ = SqlOther "UUID"
+migrateDB' :: (AppState) => IO ()
+migrateDB' = withPoolDB $ runMigration migrateAll
 
-instance PathPiece UUID where
-  fromPathPiece = UUID.fromText
-  toPathPiece = UUID.toText
+type family RecordOf e where
+  RecordOf (Entity r) = r
 
-type PoolSql = Pool SqlBackend
+{- | Get an entity by its key.
+Usage: getById (type (Entity User)) userId
+-}
+getById
+  :: forall e
+    ->( AppState
+      , MonadIO m
+      , PersistEntity (RecordOf e)
+      , PersistEntityBackend (RecordOf e) ~ SqlBackend
+      , e ~ Entity (RecordOf e)
+      )
+  => Key (RecordOf e)
+  -> m (Maybe e)
+getById _ i = withPoolDB $ DB.getEntity i
 
-share
-  [mkPersist sqlSettings, mkMigrate "migrateAll"]
-  [persistLowerCase|
-  Maintainer sql=maintainers
-    login Text
-    username Text
-    frId Int -- Forgejouser id
-    deriving Eq
-  Repository sql=repositories
-    frRepoId Int
-    repoUrl Text -- repository.clone_url
-    repoName Text -- repository.full_name
-    deriving Eq
-  Jobs sql=jobs
-    Id UUID default=gen_random_uuid()
-  RepoMaintainers sql=repository_maintainers
-    repoId RepositoryId
-    mnId MaintainerId
-    deriving Eq
-|]
+{- | Insert a new record and return its key.
+Usage: create (type (Entity User)) userRecord
+-}
+create
+  :: forall e
+    ->( AppState
+      , DB.SafeToInsert (RecordOf e)
+      , MonadIO m
+      , PersistEntity (RecordOf e)
+      , PersistEntityBackend (RecordOf e) ~ SqlBackend
+      , e ~ Entity (RecordOf e)
+      )
+  => RecordOf e -> m e
+create _ r = withPoolDB $ DB.insertEntity r
 
-type Maintainer :: Type
-type MaintainerId :: Type
+{- | Insert a new record and return its key.
+Usage: create (type (Entity User)) userRecord
+-}
+createKey
+  :: forall e
+    ->( AppState
+      , DB.SafeToInsert (RecordOf e)
+      , MonadIO m
+      , PersistEntity (RecordOf e)
+      , PersistEntityBackend (RecordOf e) ~ SqlBackend
+      , e ~ Entity (RecordOf e)
+      )
+  => RecordOf e -> m (Key (RecordOf e))
+createKey _ r = withPoolDB $ DB.insert r
 
-deriving stock instance Generic Maintainer
-deriving stock instance Show Maintainer
-deriving anyclass instance FromJSON Maintainer
+{- | Get all entities of a type.
+Usage: getAll (type (Entity User))
+-}
+getAll
+  :: forall e
+    ->( AppState
+      , MonadIO m
+      , PersistEntity (RecordOf e)
+      , PersistEntityBackend (RecordOf e) ~ SqlBackend
+      , e ~ Entity (RecordOf e)
+      )
+  => m [e]
+getAll _ = withPoolDB $ DB.selectList [] []
 
-type Repository :: Type
-type RepositoryId :: Type
+-- FIXME: It will be moved to the dedicated module from Database
+getByRole :: (AppState, MonadIO m) => RoleId -> m [Entity User]
+getByRole role =
+  withPoolDB
+    $ DB.selectList
+      [UserRole ==. role]
+      []
 
-deriving stock instance Generic Repository
-deriving stock instance Show Repository
-deriving anyclass instance FromJSON Repository
-deriving anyclass instance ToJSON Repository
+getByFrId :: (AppState, MonadIO m) => FR.UserId -> m (Maybe (Entity User))
+getByFrId (FR.UserId x) =
+  withPoolDB
+    $ DB.selectList [UserFrId ==. (fromIntegral x)] []
+      >>= pure . listToMaybe

@@ -10,6 +10,8 @@ module Kotiba.Prelude
   , MonadError (..)
   , ToJSON
   , FromJSON
+  -- 3rd party tools
+  , printer
 
     -- * Application
   , AppSt (..)
@@ -29,11 +31,12 @@ import Control.Monad.Reader (MonadReader, ReaderT (..), asks, runReaderT)
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Kind (Constraint, Type)
 import Data.Text (Text)
-import Database
 import Database.Persist.Sql (SqlPersistT, runMigration, runSqlPool)
+import Database.Types
 import Forgejo.App (AppEnv, AppM, runAppM)
 import GHC.Generics (Generic)
 import Servant (Handler)
+import Shower (printer)
 
 data AppSt = MkAppSt
   { config :: Config

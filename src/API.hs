@@ -6,8 +6,11 @@
 
 module API where
 
+import API.Dev (DevRoutes, devHandlers)
 import API.Util (errorFormatters)
-import Forgejo
+import Control.Monad (void)
+import Events.PullRequest (processPrOpen)
+import Forgejo hiding (User, userId)
 import Kotiba.Prelude
 import Servant
 import Servant.Server.Generic
@@ -15,6 +18,7 @@ import Servant.Server.Generic
 type API :: Type -> Type
 data API route = MkAPI
   { health :: route :- "health" :> Get '[JSON] Integer
+  , dev :: route :- "dev" :> NamedRoutes DevRoutes
   , webhook :: route :- WebhookAPI
   }
   deriving stock (Generic)
@@ -27,10 +31,7 @@ handleWebhook payload = case payload of
   WPActionRun p -> onActionRun p
 
 onPullRequest :: (AppState) => PullRequestPayload -> Handler ()
-onPullRequest pl = do
-  let org = pl.prpRepository.repoOwner.userLogin
-  members <- withForgejo (getOrgMember org)
-  liftIO $ print (userLogin <$> members)
+onPullRequest pl = void $ processPrOpen pl
 
 onIssueComment :: (AppState) => IssueCommentPayload -> Handler ()
 onIssueComment _ = pure ()
@@ -53,11 +54,12 @@ apiHandlers :: (AppState) => API AsServer
 apiHandlers =
   MkAPI
     { health = heal
+    , dev = devHandlers
     , webhook = webhookHandler handleWebhook
     }
 
-heal :: Handler Integer
-heal =
+heal :: (AppState) => Handler Integer
+heal = do
   return 1
 
 mkServer :: (AppState) => ApiServer AsServer

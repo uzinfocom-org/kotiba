@@ -12,7 +12,7 @@
     self,
     dream2nix,
     nixpkgs,
-    git-hooks
+    git-hooks,
   }: let
     systems = ["x86_64-linux" "aarch64-linux" "aarch64-darwin"];
     eachSystem = nixpkgs.lib.genAttrs systems;
@@ -60,34 +60,35 @@
       };
     in {
       default = pkgs.mkShell {
-        nativeBuildInputs = [
-          pkgs.cabal-install
-          hp.ghc
-          hp.haskell-language-server
-          hp.fourmolu
-          hp.hlint
-          hp.ghcid
-          hp.implicit-hie
-          pkgs.haskellPackages.cabal-fmt
-          pkgs.pkg-config
-          pkgs.zlib
-          pkgs.zlib.dev
-          pkgs.bzip2
-          pkgs.bzip2.dev
-          pkgs.libzip
-          pkgs.libpq
-          pkgs.libpq.dev
+        nativeBuildInputs =
+          [
+            pkgs.cabal-install
+            hp.ghc
+            hp.haskell-language-server
+            hp.fourmolu
+            hp.hlint
+            hp.ghcid
+            hp.implicit-hie
+            pkgs.haskellPackages.cabal-fmt
+            pkgs.pkg-config
+            pkgs.zlib
+            pkgs.zlib.dev
+            pkgs.bzip2
+            pkgs.bzip2.dev
+            pkgs.libzip
+            pkgs.libpq
+            pkgs.libpq.dev
 
-          pkgs.nixd
-          pkgs.statix
-          pkgs.deadnix
-          pkgs.treefmt
-          pkgs.alejandra
+            pkgs.nixd
+            pkgs.statix
+            pkgs.deadnix
+            pkgs.treefmt
+            pkgs.alejandra
 
-          pkgs.jq
-          pkgs.just
-        ]
-        ++ self.checks.${system}.pre-commit.enabledPackages;
+            pkgs.jq
+            pkgs.just
+          ]
+          ++ self.checks.${system}.pre-commit.enabledPackages;
 
         shellHook = ''
           echo "Welcome to kotiba dev shell"

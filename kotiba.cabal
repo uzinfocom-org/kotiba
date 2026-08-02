@@ -18,9 +18,13 @@ library
   hs-source-dirs:     src
   exposed-modules:
     API
+    API.Dev
     API.Util
     Config
     Database
+    Database.Types
+    Events.PullRequest
+    Git.PullRequest
     Kotiba.Prelude
     Server
 
@@ -47,11 +51,14 @@ library
     , path-pieces
     , persistent
     , persistent-postgresql
+    , persistent-records
+    , random
     , resource-pool
     , safe-exceptions
     , servant-client
     , servant-client-core
     , servant-server
+    , shower
     , stm
     , text
     , time
