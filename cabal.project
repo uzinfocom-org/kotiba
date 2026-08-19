@@ -4,7 +4,7 @@ packages:
 source-repository-package
   type: git
   location: https://github.com/uzinfocom-org/forgejo.git
-  tag: 92a5fbc46eb04c8f67129bb52ddd7daafc383881
+  tag: 89209589c5b277848d9f41a5131926e545db2e6b
 
 source-repository-package
   type: git

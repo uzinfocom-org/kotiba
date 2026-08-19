@@ -12,6 +12,7 @@ module Kotiba.Prelude
   , FromJSON
   -- 3rd party tools
   , printer
+  , (<!!>)
 
     -- * Application
   , AppSt (..)
@@ -19,6 +20,7 @@ module Kotiba.Prelude
   , AppEnv
   , AppM
   , withForgejo
+  , tryForgejo
   , Config (..)
   , withPool
   , migrate'
@@ -33,7 +35,8 @@ import Data.Kind (Constraint, Type)
 import Data.Text (Text)
 import Database.Persist.Sql (SqlPersistT, runMigration, runSqlPool)
 import Database.Types
-import Forgejo.App (AppEnv, AppM, runAppM)
+import Forgejo.App (AppEnv, AppM, runAppM, runForgejo)
+import Forgejo.Error (ForgejoError (..))
 import GHC.Generics (Generic)
 import Servant (Handler)
 import Shower (printer)
@@ -50,6 +53,9 @@ type AppState = (?st :: AppSt)
 withForgejo :: (AppState) => AppM a -> Handler a
 withForgejo = runAppM ?st.forgejo
 
+tryForgejo :: (AppState, MonadIO m) => AppM a -> m (Either ForgejoError a)
+tryForgejo action = liftIO $ runForgejo ?st.forgejo action
+
 withPool :: (MonadIO m, MonadReader AppSt m) => SqlPersistT IO a -> m a
 withPool q = do
   pool <- asks (.db)
@@ -57,3 +63,8 @@ withPool q = do
 
 migrate' :: AppSt -> IO ()
 migrate' st = flip runReaderT st $ withPool (runMigration migrateAll)
+
+infixl 0 <!!>
+
+(<!!>) :: (MonadError e m, MonadIO m) => IO (Either err a) -> (err -> e) -> m a
+action <!!> f = liftIO action >>= either (throwError . f) pure

@@ -11,7 +11,7 @@ build-type:      Simple
 extra-doc-files: CHANGELOG.md
 
 common warnings
-  ghc-options: -Wall -Wunused-imports
+  ghc-options: -Wall -Wunused-imports -threaded
 
 library
   import:             warnings
@@ -23,7 +23,10 @@ library
     Config
     Database
     Database.Types
+    Events.Backport
     Events.PullRequest
+    Git.Backport
+    Git.Core
     Git.PullRequest
     Kotiba.Prelude
     Server
@@ -35,6 +38,7 @@ library
     , conduit
     , conduit-combinators
     , containers
+    , directory
     , esqueleto
     , filepath
     , forgejo
@@ -64,6 +68,7 @@ library
     , time
     , toml-parser
     , transformers
+    , typed-process
     , uuid
     , vector
     , wai

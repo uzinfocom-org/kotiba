@@ -1,6 +1,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OrPatterns #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 
@@ -9,6 +10,7 @@ module API where
 import API.Dev (DevRoutes, devHandlers)
 import API.Util (errorFormatters)
 import Control.Monad (void)
+import Events.Backport (processBackport)
 import Events.PullRequest (processPrOpen)
 import Forgejo hiding (User, userId)
 import Kotiba.Prelude
@@ -24,14 +26,17 @@ data API route = MkAPI
   deriving stock (Generic)
 
 handleWebhook :: (AppState) => WebhookPayload -> Handler ()
-handleWebhook payload = case payload of
+handleWebhook = \case
   WPPush p -> onPush p
   WPPullRequest p -> onPullRequest p
   WPIssueComment p -> onIssueComment p
   WPActionRun p -> onActionRun p
 
 onPullRequest :: (AppState) => PullRequestPayload -> Handler ()
-onPullRequest pl = void $ processPrOpen pl
+onPullRequest = \case
+  pl@PullRequestPayload{prpAction = PrOpened} -> void $ processPrOpen pl
+  pl@PullRequestPayload{prpAction = (PrClosed; PrLabelUpdated)} -> processBackport pl
+  _ -> pure ()
 
 onIssueComment :: (AppState) => IssueCommentPayload -> Handler ()
 onIssueComment _ = pure ()

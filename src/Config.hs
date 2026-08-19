@@ -20,6 +20,8 @@ data Config = Config
   , databasePoolSize :: !Int
   , forgejoUrl :: !Text
   , forgejoToken :: !Text
+  , identityName :: !Text
+  , identityEmail :: !Text
   }
   deriving (Eq, Generic, Show)
   deriving (FromValue, ToTable, ToValue) via GenericTomlTable Config

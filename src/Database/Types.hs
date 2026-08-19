@@ -13,6 +13,7 @@ import Data.Kind (Type)
 import Data.Pool (Pool)
 import Data.Text (Text)
 import Data.Text.Encoding (decodeUtf8)
+import Data.Time (UTCTime)
 import Data.UUID (UUID)
 import Data.UUID qualified as UUID
 import Database.Esqueleto.Experimental
@@ -40,6 +41,12 @@ instance PathPiece UUID where
 
 type PoolSql = Pool SqlBackend
 
+data BackportStatus = BPOpened | BPConflict | BPError
+  deriving stock (Eq, Generic, Read, Show)
+  deriving anyclass (FromJSON, ToJSON)
+
+derivePersistField "BackportStatus"
+
 share
   [mkPersist sqlSettings, mkMigrate "migrateAll"]
   [persistLowerCase|
@@ -63,6 +70,15 @@ share
     deriving Eq
   Role sql=roles
     name Text
+    deriving Eq
+  BackportRecord sql=backport_records
+    sourcePrNumber Int
+    repoFrId Int
+    targetBranch Text
+    backportPrNumber Int Maybe
+    status BackportStatus
+    createdAt UTCTime default=now()
+    UniqueBackportRecord sourcePrNumber repoFrId targetBranch
     deriving Eq
 |]
 
@@ -89,6 +105,11 @@ deriving stock instance Generic Role
 deriving stock instance Show Role
 deriving anyclass instance FromJSON Role
 deriving anyclass instance ToJSON Role
+
+deriving stock instance Generic BackportRecord
+deriving stock instance Show BackportRecord
+deriving anyclass instance FromJSON BackportRecord
+deriving anyclass instance ToJSON BackportRecord
 
 genRec ''Role
 genRec ''User
