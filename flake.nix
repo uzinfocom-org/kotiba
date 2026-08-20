@@ -95,21 +95,24 @@
               export NIX_LDFLAGS="$NIX_LDFLAGS -L${pkgs.bzip2}/lib"
             '';
 
-            NIX_CONFIG = "extra-experimental-features = nix-command flakes";
-          };
-        });
-      apps = eachSystem (system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-          refresh = self.packages.${system}.default.config.lock.refresh;
-        in {
-          update-lock = {
-            type = "app";
-            program = "${pkgs.writeShellScript "update-lock" ''
-              export PATH="${pkgs.git}/bin:${pkgs.cabal-install}/bin:$PATH"
-              exec ${nixpkgs.lib.getExe refresh}
-            ''}";
-          };
-        });
+        NIX_CONFIG = "extra-experimental-features = nix-command flakes";
+      };
+    });
+    apps = eachSystem (system: let
+      pkgs = nixpkgs.legacyPackages.${system};
+      refresh = self.packages.${system}.default.config.lock.refresh;
+    in {
+      update-lock = {
+        type = "app";
+        program = "${pkgs.writeShellScript "update-lock" ''
+          export PATH="${pkgs.git}/bin:${pkgs.cabal-install}/bin:$PATH"
+          exec ${nixpkgs.lib.getExe refresh}
+        ''}";
+      };
+    });
+
+    nixosModules = {
+      default = import ./module.nix;
     };
+  };
 }
