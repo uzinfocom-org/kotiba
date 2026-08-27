@@ -40,6 +40,37 @@
               };
             };
           };
+          test = pkgs.testers.runNixOSTest {
+
+            name = "config test";
+
+            nodes.machine = { ... }: {
+              imports = with self; [
+                nixosModules.default
+                ({ ... }: {
+                  services.kotiba = {
+                    enable = true;
+                    createDatabaseLocally = true;
+                    forgejoToken =
+                      "write your access token (dont forget delete it before pushing";
+                    forgejoUrl = "git.oss.uzinfocom.uz";
+                  };
+                  system.stateVersion = "26.05";
+                })
+              ];
+            };
+
+            node = {
+              # since we are using an overlay, we must make pkgs writable
+              pkgsReadOnly = false;
+            };
+
+            # disable only when working on testScript
+            skipTypeCheck = true;
+
+            testScript = builtins.readFile ./test.py;
+          };
+
         });
 
       devShells = eachSystem (system:
@@ -95,24 +126,24 @@
               export NIX_LDFLAGS="$NIX_LDFLAGS -L${pkgs.bzip2}/lib"
             '';
 
-        NIX_CONFIG = "extra-experimental-features = nix-command flakes";
-      };
-    });
-    apps = eachSystem (system: let
-      pkgs = nixpkgs.legacyPackages.${system};
-      refresh = self.packages.${system}.default.config.lock.refresh;
-    in {
-      update-lock = {
-        type = "app";
-        program = "${pkgs.writeShellScript "update-lock" ''
-          export PATH="${pkgs.git}/bin:${pkgs.cabal-install}/bin:$PATH"
-          exec ${nixpkgs.lib.getExe refresh}
-        ''}";
-      };
-    });
+            NIX_CONFIG = "extra-experimental-features = nix-command flakes";
+          };
+        });
+      apps = eachSystem (system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+          refresh = self.packages.${system}.default.config.lock.refresh;
+        in {
+          update-lock = {
+            type = "app";
+            program = "${pkgs.writeShellScript "update-lock" ''
+              export PATH="${pkgs.git}/bin:${pkgs.cabal-install}/bin:$PATH"
+              exec ${nixpkgs.lib.getExe refresh}
+            ''}";
+          };
+        });
 
-    nixosModules = {
-      default = import ./module.nix;
+      nixosModules = { default = import ./module.nix self; };
+
     };
-  };
 }
