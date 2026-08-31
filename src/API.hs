@@ -12,7 +12,9 @@ import API.Util (errorFormatters)
 import Control.Monad (void)
 import Events.Backport (processBackport)
 import Events.PullRequest (processPrOpen)
+import Events.Release (processRelease)
 import Forgejo hiding (User, userId)
+import Forgejo.Types.Release (HookReleaseAction (..), ReleasePayload (..))
 import Kotiba.Prelude
 import Servant
 import Servant.Server.Generic
@@ -31,6 +33,7 @@ handleWebhook = \case
   WPPullRequest p -> onPullRequest p
   WPIssueComment p -> onIssueComment p
   WPActionRun p -> onActionRun p
+  WPRelease p -> onRelease p
 
 onPullRequest :: (AppState) => PullRequestPayload -> Handler ()
 onPullRequest = \case
@@ -46,6 +49,10 @@ onPush _ = pure ()
 
 onActionRun :: (AppState) => ActionRunPayload -> Handler ()
 onActionRun _ = pure ()
+
+onRelease = \case
+  pl@ReleasePayload{rpAction = RelPublished} -> processRelease pl
+  _ -> pure ()
 
 data ApiServer route = MkApiServer
   { api :: route :- NamedRoutes API

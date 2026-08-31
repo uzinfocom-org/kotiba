@@ -25,6 +25,7 @@ library
     Database.Types
     Events.Backport
     Events.PullRequest
+    Events.Release
     Git.Backport
     Git.Core
     Git.PullRequest
