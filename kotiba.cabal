@@ -28,6 +28,7 @@ library
     Git.Backport
     Git.Core
     Git.PullRequest
+    Git.Release
     Kotiba.Prelude
     Server
 
