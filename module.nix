@@ -1,55 +1,43 @@
-flake: {
-  config,
-  lib,
-  pkgs,
-  ...
-}: let
-  inherit
-    (lib)
-    mkEnableOption
-    mkOption
-    mkIf
-    mkMerge
-    types
-    ;
+flake:
+{ config, lib, pkgs, ... }:
+let
+  inherit (lib) mkEnableOption mkOption mkIf mkMerge types;
 
   package = flake.packages.${pkgs.stdenv.hostPlatform.system}.default;
   packageName = package.name;
   cfg = config.services.${packageName};
 
-  caddy = lib.mkIf (cfg.enable && cfg.proxy.enable && cfg.proxy.proxy == "caddy") {
-    services.caddy.virtualHosts =
-      lib.debug.traceIf (isNull cfg.proxy.domain)
-      "proxy.domain can't be null, please specify it properly!"
-      {
-        "${cfg.proxy.domain}" = {
-          serverAliases = cfg.proxy.aliases;
-          extraConfig = ''
-            reverse_proxy 127.0.0.1:${toString cfg.port}
-          '';
-        };
-      };
-  };
-
-  nginx = lib.mkIf (cfg.enable && cfg.proxy.enable && cfg.proxy.proxy == "nginx") {
-    services.nginx = {
-      virtualHosts =
-        lib.debug.traceIf (isNull cfg.proxy.domain)
-        "proxy.domain can't be null, please specify it properly!"
-        {
+  caddy =
+    lib.mkIf (cfg.enable && cfg.proxy.enable && cfg.proxy.proxy == "caddy") {
+      services.caddy.virtualHosts = lib.debug.traceIf (isNull cfg.proxy.domain)
+        "proxy.domain can't be null, please specify it properly!" {
           "${cfg.proxy.domain}" = {
-            addSSL = true;
-            enableACME = true;
             serverAliases = cfg.proxy.aliases;
-            locations."/" = {
-              proxyPass = "http://127.0.0.1:${toString cfg.port}";
-              proxyWebsockets = true;
-            };
+            extraConfig = ''
+              reverse_proxy 127.0.0.1:${toString cfg.port}
+            '';
           };
         };
-      clientMaxBodySize = "64m";
     };
-  };
+
+  nginx =
+    lib.mkIf (cfg.enable && cfg.proxy.enable && cfg.proxy.proxy == "nginx") {
+      services.nginx = {
+        virtualHosts = lib.debug.traceIf (isNull cfg.proxy.domain)
+          "proxy.domain can't be null, please specify it properly!" {
+            "${cfg.proxy.domain}" = {
+              addSSL = true;
+              enableACME = true;
+              serverAliases = cfg.proxy.aliases;
+              locations."/" = {
+                proxyPass = "http://127.0.0.1:${toString cfg.port}";
+                proxyWebsockets = true;
+              };
+            };
+          };
+        clientMaxBodySize = "64m";
+      };
+    };
 
   service = mkIf cfg.enable {
     users.users.${cfg.user} = {
@@ -60,7 +48,7 @@ flake: {
       useDefaultShell = true;
     };
 
-    users.groups.${cfg.group} = {};
+    users.groups.${cfg.group} = { };
 
     systemd.tmpfiles.rules = [
       "d ${cfg.dataDir}         0770 ${cfg.user} ${cfg.group} -"
@@ -68,12 +56,12 @@ flake: {
       "f /var/log/${packageName}/error.log 0640 ${cfg.user} ${cfg.group} -"
     ];
 
-    systemd.targets.${packageName} = {};
+    systemd.targets.${packageName} = { };
 
     systemd.services."${packageName}-config" = {
-      wantedBy = ["multi-user.target"];
-      after = ["systemd-tmpfiles-setup.service"];
-      requires = ["systemd-tmpfiles-setup.service"];
+      wantedBy = [ "multi-user.target" ];
+      after = [ "systemd-tmpfiles-setup.service" ];
+      requires = [ "systemd-tmpfiles-setup.service" ];
 
       serviceConfig = {
         Type = "oneshot";
@@ -83,9 +71,7 @@ flake: {
         RestartSec = "2s";
         RemainAfterExit = true;
 
-        ReadWritePaths = [
-          cfg.dataDir
-        ];
+        ReadWritePaths = [ cfg.dataDir ];
 
         ExecStartPre = let
           preStartFullPrivileges = ''
@@ -93,7 +79,10 @@ flake: {
             ${pkgs.coreutils}/bin/install -d -m 0770 -o ${cfg.user} -g ${cfg.group} ${cfg.dataDir}
             ${pkgs.coreutils}/bin/install -d -m 0770 -o ${cfg.user} -g ${cfg.group} ${cfg.tmpDir}
           '';
-        in "+${pkgs.writeShellScript "${packageName}-pre-start-full-privileges" preStartFullPrivileges}";
+        in "+${
+          pkgs.writeShellScript "${packageName}-pre-start-full-privileges"
+          preStartFullPrivileges
+        }";
 
         ExecStart = pkgs.writeShellScript "${packageName}-config" ''
           set -o errexit -o pipefail -o nounset
@@ -108,21 +97,13 @@ flake: {
     systemd.services.${packageName} = {
       description = "${packageName} — Forgejo webhook bot";
 
-      environment = {};
+      environment = { };
 
-      after = [
-        "network.target"
-        "${packageName}-config.service"
-      ];
-      wants = ["network-online.target"];
-      wantedBy = ["multi-user.target"];
-      restartTriggers = [
-        cfg.package
-        toml-config
-      ];
-      path = [
-        cfg.package
-      ];
+      after = [ "network.target" "${packageName}-config.service" ];
+      wants = [ "network-online.target" ];
+      wantedBy = [ "multi-user.target" ];
+      restartTriggers = [ cfg.package toml-config ];
+      path = [ cfg.package ];
 
       serviceConfig = {
         User = cfg.user;
@@ -131,7 +112,8 @@ flake: {
         SyslogLevel = "debug";
         StandardOutput = "append:/var/log/${packageName}/info.log";
         StandardError = "append:/var/log/${packageName}/error.log";
-        ExecStart = "${lib.getBin package}/bin/${cfg.executableName} -c ${toml-config}";
+        ExecStart =
+          "${lib.getBin package}/bin/${cfg.executableName} -c ${toml-config}";
         ExecReload = "${pkgs.coreutils}/bin/kill -s HUP $MAINPID";
 
         StateDirectory = cfg.user;
@@ -139,16 +121,9 @@ flake: {
         LogsDirectory = packageName;
         LogsDirectoryMode = "0750";
 
-        ReadWritePaths = [
-          cfg.dataDir
-          "/var/log/${packageName}"
-        ];
+        ReadWritePaths = [ cfg.dataDir "/var/log/${packageName}" ];
 
-        CapabilityBoundingSet = [
-          "AF_NETLINK"
-          "AF_INET"
-          "AF_INET6"
-        ];
+        CapabilityBoundingSet = [ "AF_NETLINK" "AF_INET" "AF_INET6" ];
         LockPersonality = true;
         PrivateDevices = true;
         PrivateTmp = true;
@@ -159,14 +134,10 @@ flake: {
         ProtectKernelLogs = true;
         ProtectKernelTunables = true;
         ProtectSystem = "strict";
-        ReadOnlyPaths = ["/"];
+        ReadOnlyPaths = [ "/" ];
         RemoveIPC = true;
-        RestrictAddressFamilies = [
-          "AF_NETLINK"
-          "AF_INET"
-          "AF_INET6"
-          "AF_UNIX"
-        ];
+        RestrictAddressFamilies =
+          [ "AF_NETLINK" "AF_INET" "AF_INET6" "AF_UNIX" ];
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
         SystemCallArchitectures = "native";
@@ -175,7 +146,7 @@ flake: {
     };
   };
 
-  toml = pkgs.formats.toml {};
+  toml = pkgs.formats.toml { };
 
   toml-config = toml.generate "config.toml" {
     dataDir = cfg.dataDir;
@@ -188,9 +159,8 @@ flake: {
 
   asserts = lib.mkIf cfg.enable {
     warnings = [
-      (lib.mkIf (
-        cfg.proxy.enable && cfg.proxy.domain == null
-      ) "services.${packageName}.proxy.domain must be set in order to properly generate certificate!")
+      (lib.mkIf (cfg.proxy.enable && cfg.proxy.domain == null)
+        "services.${packageName}.proxy.domain must be set in order to properly generate certificate!")
     ];
   };
 in {
@@ -209,22 +179,19 @@ in {
           type = with types; nullOr str;
           default = null;
           example = "kotiba.uz";
-          description = "Domain to use while adding configurations to web proxy server";
+          description =
+            "Domain to use while adding configurations to web proxy server";
         };
 
         aliases = mkOption {
           type = with types; listOf str;
-          default = [];
-          example = ["www.kotiba.uz"];
+          default = [ ];
+          example = [ "www.kotiba.uz" ];
           description = "List of domain aliases to add to domain";
         };
 
         proxy = mkOption {
-          type = with types;
-            nullOr (enum [
-              "nginx"
-              "caddy"
-            ]);
+          type = with types; nullOr (enum [ "nginx" "caddy" ]);
           default = "caddy";
           description = "Proxy reverse software for hosting website";
         };
@@ -319,10 +286,5 @@ in {
       };
     };
   };
-  config = mkMerge [
-    asserts
-    service
-    caddy
-    nginx
-  ];
+  config = mkMerge [ asserts service caddy nginx ];
 }
