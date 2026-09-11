@@ -35,7 +35,6 @@ let
               };
             };
           };
-        clientMaxBodySize = "64m";
       };
     };
 
