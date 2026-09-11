@@ -5,17 +5,41 @@
     dream2nix.url = "github:nix-community/dream2nix";
     nixpkgs.follows = "dream2nix/nixpkgs";
 
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+
     git-hooks.url = "github:cachix/git-hooks.nix";
+
+    systems.url = "github:nix-systems/default";
+
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, dream2nix, nixpkgs, git-hooks, }:
+  outputs = { self, dream2nix, systems, nixpkgs, nixpkgs-unstable, git-hooks
+    , treefmt-nix }:
     let
-      systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];
-      eachSystem = nixpkgs.lib.genAttrs systems;
+      eachSystem = f:
+        nixpkgs.lib.genAttrs (import systems)
+        (system: f nixpkgs.legacyPackages.${system});
+      pkgsUnstable =
+        eachSystem (pkgs: nixpkgs-unstable.legacyPackages.${pkgs.system});
+      treefmt = {
+        projectRootFile = "flake.nix";
+        programs.fourmolu.enable = true;
+        programs.cabal-fmt.enable = true;
+        programs.nixfmt.enable = true;
+      };
+      treefmtEval = eachSystem (pkgs:
+        treefmt-nix.lib.evalModule pkgs (treefmt // {
+          programs.fourmolu.package =
+            pkgsUnstable.${pkgs.system}.haskell.packages."ghc912".fourmolu;
+        }));
     in {
-      packages = eachSystem (system: {
+      packages = eachSystem (pkgs: {
         default = dream2nix.lib.evalModules {
-          packageSets.nixpkgs = nixpkgs.legacyPackages.${system};
+          packageSets.nixpkgs = pkgs;
           modules = [
             ./default.nix
             {
@@ -27,61 +51,56 @@
         };
       });
 
-      checks = eachSystem (system:
-        let pkgs = nixpkgs.legacyPackages.${system};
-        in {
-          pre-commit = git-hooks.lib.${system}.run {
-            src = ./.;
+      checks = eachSystem (pkgs: {
+        pre-commit = git-hooks.lib.${pkgs.system}.run {
+          src = ./.;
 
-            hooks = {
-              treefmt = {
-                enable = true;
-                package = pkgs.treefmt;
-              };
+          hooks = {
+            treefmt = {
+              enable = true;
+              package = treefmtEval.${pkgs.system}.config.build.wrapper;
             };
           };
-          test = pkgs.testers.runNixOSTest {
+        };
+        test = pkgs.testers.runNixOSTest {
 
-            name = "config test";
+          name = "config test";
 
-            nodes.machine = { ... }: {
-              imports = with self; [
-                nixosModules.default
-                ({ ... }: {
-                  services.kotiba = {
-                    enable = true;
-                    createDatabaseLocally = true;
-                    forgejoToken =
-                      "write your access token (dont forget delete it before pushing";
-                    forgejoUrl = "git.oss.uzinfocom.uz";
-                  };
-                  system.stateVersion = "26.05";
-                })
-              ];
-            };
-
-            node = {
-              # since we are using an overlay, we must make pkgs writable
-              pkgsReadOnly = false;
-            };
-
-            # disable only when working on testScript
-            skipTypeCheck = true;
-
-            testScript = builtins.readFile ./test.py;
+          nodes.machine = { ... }: {
+            imports = with self; [
+              nixosModules.default
+              ({ ... }: {
+                services.kotiba = {
+                  enable = true;
+                  createDatabaseLocally = true;
+                  forgejoToken =
+                    "write your access token (dont forget delete it before pushing";
+                  forgejoUrl = "git.oss.uzinfocom.uz";
+                };
+                system.stateVersion = "26.05";
+              })
+            ];
           };
 
-        });
+          node = {
+            # since we are using an overlay, we must make pkgs writable
+            pkgsReadOnly = false;
+          };
 
-      devShells = eachSystem (system:
+          # disable only when working on testScript
+          skipTypeCheck = true;
+
+          testScript = builtins.readFile ./test.py;
+        };
+
+      });
+
+      devShells = eachSystem (pkgs:
         let
-          pkgs = nixpkgs.legacyPackages.${system};
-          # hp = pkgs.haskell.packages.ghc912;
           hlib = pkgs.haskell.lib;
           hp = pkgs.haskell.packages."ghc912".override {
             overrides = self: super: {
               brick = hlib.dontCheck (hlib.doJailbreak super.brick);
-              # cabal-install = hlib.dontCheck (hlib.doJailbreak super.cabal-install);
             };
           };
         in {
@@ -112,12 +131,12 @@
 
               pkgs.jq
               pkgs.just
-            ] ++ self.checks.${system}.pre-commit.enabledPackages;
+            ] ++ self.checks.${pkgs.system}.pre-commit.enabledPackages;
 
             shellHook = ''
               echo "Welcome to kotiba dev shell"
 
-              ${self.checks.${system}.pre-commit.shellHook}
+              ${self.checks.${pkgs.system}.pre-commit.shellHook}
 
               export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${pkgs.postgresql}/lib
               export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${pkgs.libzip}/lib
@@ -129,10 +148,8 @@
             NIX_CONFIG = "extra-experimental-features = nix-command flakes";
           };
         });
-      apps = eachSystem (system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-          refresh = self.packages.${system}.default.config.lock.refresh;
+      apps = eachSystem (pkgs:
+        let refresh = self.packages.${pkgs.system}.default.config.lock.refresh;
         in {
           update-lock = {
             type = "app";
@@ -145,5 +162,7 @@
 
       nixosModules = { default = import ./module.nix self; };
 
+      formatter =
+        eachSystem (pkgs: treefmtEval.${pkgs.system}.config.build.wrapper);
     };
 }

@@ -1,0 +1,8 @@
+dataDir = "/var/lib/kotiba/"
+port = 5678
+database = "postgresql://postgres:postgres@localhost:5432/postgres"
+databasePoolSize = 10
+forgejoUrl = "git.oss.uzinfocom.uz"
+forgejoToken = "/path/secret"
+identityName = "John Doe"
+identityEmail = "johndoe@gmail.com"
