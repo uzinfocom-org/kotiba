@@ -170,6 +170,8 @@ let
     databasePoolSize = cfg.databasePoolSize;
     forgejoUrl = cfg.forgejoUrl;
     forgejoToken = cfg.forgejoToken;
+    identityName = cfg.identityName;
+    identityEmail = cfg.identityEmail;
   };
 
   asserts = lib.mkIf cfg.enable {
@@ -312,6 +314,22 @@ in {
           in the Nix store via this option. Prefer passing a path read at
           activation time (e.g. via agenix/sops-nix) over a literal string
           in your configuration.
+        '';
+      };
+
+      identityName = mkOption {
+        type = types.str;
+        example = "John Doe";
+        description = ''
+          Git name identity for Bot.
+        '';
+      };
+
+      identityEmail = mkOption {
+        type = types.str;
+        example = "johndoe@mail.com";
+        description = ''
+          Git email identity for bot.
         '';
       };
 
