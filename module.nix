@@ -39,6 +39,17 @@ let
       };
     };
 
+  postgres = lib.mkIf (cfg.enable && cfg.createDatabaseLocally) {
+    services.postgresql = {
+      enable = true;
+      ensureDatabases = [ cfg.databaseName ];
+      ensureUsers = [{
+        name = cfg.user;
+        ensureDBOwnership = true;
+      }];
+    };
+  };
+
   service = mkIf cfg.enable {
     users.users.${cfg.user} = {
       description = "${packageName} service user";
@@ -77,7 +88,7 @@ let
           preStartFullPrivileges = ''
             set -o errexit -o pipefail -o nounset
             ${pkgs.coreutils}/bin/install -d -m 0770 -o ${cfg.user} -g ${cfg.group} ${cfg.dataDir}
-            ${pkgs.coreutils}/bin/install -d -m 0770 -o ${cfg.user} -g ${cfg.group} ${cfg.tmpDir}
+
           '';
         in "+${
           pkgs.writeShellScript "${packageName}-pre-start-full-privileges"
@@ -99,7 +110,12 @@ let
 
       environment = { };
 
-      after = [ "network.target" "${packageName}-config.service" ];
+      after = [
+        "postgresql.service"
+        "network.target"
+        "${packageName}-config.service"
+      ];
+      requires = [ "postgresql.service" ];
       wants = [ "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
       restartTriggers = [ cfg.package toml-config ];
@@ -229,9 +245,41 @@ in {
         '';
       };
 
+      createDatabaseLocally = mkOption {
+        type = types.bool;
+        default = false;
+        example = true;
+        description = ''
+          Whether to automatically create the PostgreSQL database and role
+          locally via NixOS' `services.postgresql` module (ensureDatabases /
+          ensureUsers with `ensureDBOwnership`).
+
+          When enabled, the systemd service and its config generation unit
+          are ordered after `postgresql.service`, and the `database` option
+          defaults to connecting over the local UNIX socket as
+          `${cfg.user}` using peer authentication.
+
+          If you use an external/remote PostgreSQL instance, leave this
+          disabled and set `database` (and `databaseName` if relevant)
+          yourself.
+        '';
+      };
+
+      databaseName = mkOption {
+        type = types.str;
+        default = packageName;
+        description = ''
+          Name of the database to create when `createDatabaseLocally` is
+          enabled.
+        '';
+      };
+
       database = mkOption {
         type = types.str;
-        default = "postgresql://postgres:postgres@localhost:5432/kotiba";
+        default = if cfg.createDatabaseLocally then
+          "postgresql:///${cfg.databaseName}?host=/run/postgresql&user=${cfg.user}"
+        else
+          "postgresql://postgres:postgres@localhost:5432/kotiba";
         example = "postgresql://postgres:postgres@localhost:5432/kotiba";
         description = ''
           Database connection URI, used to store BackportRecord and other state.
@@ -286,5 +334,5 @@ in {
       };
     };
   };
-  config = mkMerge [ asserts service caddy nginx ];
+  config = mkMerge [ asserts service caddy nginx postgres ];
 }
