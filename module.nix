@@ -100,6 +100,8 @@ let
           umask u=rwx,g=rx,o=
           ${pkgs.coreutils}/bin/install -m 0640 -o ${cfg.user} -g ${cfg.group} \
             ${toml-config} ${cfg.dataDir}/config.toml
+          ${pkgs.coreutils}/bin/install -m 0640 -o ${cfg.user} -g ${cfg.group} \
+            ${cfg.seedFile} ${cfg.dataDir}/seed.json
         '';
       };
     };
@@ -172,7 +174,7 @@ let
     forgejoToken = cfg.forgejoToken;
     identityName = cfg.identityName;
     identityEmail = cfg.identityEmail;
-    seedFile = cfg.seedFile;
+    seedFile = "${cfg.dataDir}/seed.json";
   };
 
   asserts = lib.mkIf cfg.enable {
