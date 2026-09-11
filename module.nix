@@ -172,6 +172,7 @@ let
     forgejoToken = cfg.forgejoToken;
     identityName = cfg.identityName;
     identityEmail = cfg.identityEmail;
+    seedFile = cfg.seedFile;
   };
 
   asserts = lib.mkIf cfg.enable {
@@ -330,6 +331,14 @@ in {
         example = "johndoe@mail.com";
         description = ''
           Git email identity for bot.
+        '';
+      };
+
+      seedFile = mkOption {
+        type = types.str;
+        default = "default/seed.json";
+        description = ''
+          The path where kotiba default seeds.
         '';
       };
 

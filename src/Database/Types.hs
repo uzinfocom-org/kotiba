@@ -55,11 +55,13 @@ share
     username Text
     frId Int -- Forgejouser id
     role RoleId
+    UniqueUserFrId frId
     deriving Eq
   Repository sql=repositories
     frRepoId Int
     repoUrl Text -- repository.clone_url
     repoName Text -- repository.full_name
+    UniqueRepositoryFrRepoId frRepoId
     deriving Eq
   Jobs sql=jobs
     Id UUID default=gen_random_uuid()
@@ -67,9 +69,11 @@ share
     repoId RepositoryId
     userId UserId
     role RoleId
+    UniqueRepoContributor repoId userId
     deriving Eq
   Role sql=roles
     name Text
+    UniqueRoleName name
     deriving Eq
   BackportRecord sql=backport_records
     sourcePrNumber Int

@@ -22,6 +22,7 @@ data Config = Config
   , forgejoToken :: !Text
   , identityName :: !Text
   , identityEmail :: !Text
+  , seedFile :: !FilePath
   }
   deriving (Eq, Generic, Show)
   deriving (FromValue, ToTable, ToValue) via GenericTomlTable Config

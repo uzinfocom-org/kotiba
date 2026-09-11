@@ -153,6 +153,10 @@
       apps = eachSystem (pkgs:
         let refresh = self.packages.${pkgs.system}.default.config.lock.refresh;
         in {
+          default = {
+            type = "app";
+            program = "${self.packages.${pkgs.system}.default}/bin/kotiba";
+          };
           update-lock = {
             type = "app";
             program = "${pkgs.writeShellScript "update-lock" ''

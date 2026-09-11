@@ -10,6 +10,7 @@ import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.IO qualified as TIO
 import Database.Persist.Postgresql (createPostgresqlPool)
+import Database.Seed (seedIfChanged)
 import Forgejo.App (mkAppEnv)
 import Kotiba.Prelude
 import Network.HTTP.Client.TLS (newTlsManager)
@@ -60,6 +61,7 @@ run = do
           st = MkAppSt{config = fc, db = pool, forgejo = mkAppEnv cenv ("token " <> fgToken)}
           settings = setPort c.port $ setHost "*" defaultSettings
       migrate' st
+      seedIfChanged st c.seedFile
       let ?st = st
       runSettings settings (catchExceptions runApi)
     Failure _ -> putStrLn "Failed to load config"

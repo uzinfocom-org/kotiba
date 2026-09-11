@@ -22,6 +22,7 @@ library
     API.Util
     Config
     Database
+    Database.Seed
     Database.Types
     Events.Backport
     Events.PullRequest
