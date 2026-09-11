@@ -74,8 +74,10 @@
                   enable = true;
                   createDatabaseLocally = true;
                   forgejoToken =
-                    "write your access token (dont forget delete it before pushing";
+                    "write your access token (dont forget delete it before pushing)";
                   forgejoUrl = "git.oss.uzinfocom.uz";
+                  identityName = "John Doe";
+                  identityEmail = "johndoe@mail.com";
                 };
                 system.stateVersion = "26.05";
               })
