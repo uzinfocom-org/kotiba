@@ -2,7 +2,7 @@
   description = "Kotiba application";
 
   inputs = {
-    dream2nix.url = "github:nix-community/dream2nix";
+    dream2nix.url = "github:lambdajon/dream2nix";
     nixpkgs.follows = "dream2nix/nixpkgs";
 
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
