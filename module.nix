@@ -336,9 +336,9 @@ in {
 
       seedFile = mkOption {
         type = types.str;
-        default = "default/seed.json";
+        default = "${package}/share/kotiba/seed.json";
         description = ''
-          The path where kotiba default seeds.
+          Path to the seed JSON file. Defaults to the one bundled with the package.
         '';
       };
 

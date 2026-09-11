@@ -21,4 +21,8 @@
     ++ (with pkgs; [ git ]);
 
   mkDerivation.nativeBuildInputs = [ config.deps.pkg-config ];
+
+  mkDerivation.postInstall = ''
+    install -Dm644 default/seed.json $out/share/kotiba/seed.json
+  '';
 }
