@@ -7,6 +7,7 @@ import Data.Kind (Type)
 import Data.Text (Text)
 import Data.Text.Encoding (decodeUtf8)
 import GHC.Generics (Generic)
+import RNA.StorageMode (StorageMode)
 import Toml qualified
 import Toml.Schema (FromValue, ToTable, ToValue)
 import Toml.Schema.Generic (GenericTomlTable (..))
@@ -23,6 +24,7 @@ data Config = Config
   , identityName :: !Text
   , identityEmail :: !Text
   , seedFile :: !FilePath
+  , releaseNotesStorage :: !StorageMode
   }
   deriving (Eq, Generic, Show)
   deriving (FromValue, ToTable, ToValue) via GenericTomlTable Config

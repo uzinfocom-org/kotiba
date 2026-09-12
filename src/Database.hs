@@ -195,3 +195,29 @@ getMaintainerUsernames repoFrId = do
     else do
       global <- getByRole (toSqlKey 1)
       pure [(entityVal u).userUsername | u <- global]
+
+releaseNotesExists :: (AppState, MonadIO m) => Int -> Text -> m Bool
+releaseNotesExists repoFrId tag =
+  withPoolDB
+    $ DB.exists
+      [ ReleaseNotesRecordRepoFrId ==. repoFrId
+      , ReleaseNotesRecordTargetTag ==. tag
+      ]
+
+recordReleaseNotes :: (AppState, MonadIO m) => Int -> Text -> ReleaseNotesStatus -> m ()
+recordReleaseNotes repoFrId tag status = do
+  now <- liftIO getCurrentTime
+  withPoolDB $ do
+    existing <- DB.getBy (UniqueReleaseNotesRecord repoFrId tag)
+    case existing of
+      Just (Entity key _) ->
+        DB.update key [ReleaseNotesRecordStatus DB.=. status, ReleaseNotesRecordCreatedAt DB.=. now]
+      Nothing ->
+        void
+          $ DB.insert
+            ReleaseNotesRecord
+              { releaseNotesRecordRepoFrId = repoFrId
+              , releaseNotesRecordTargetTag = tag
+              , releaseNotesRecordStatus = status
+              , releaseNotesRecordCreatedAt = now
+              }

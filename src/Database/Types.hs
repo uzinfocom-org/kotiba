@@ -47,6 +47,12 @@ data BackportStatus = BPOpened | BPConflict | BPError
 
 derivePersistField "BackportStatus"
 
+data ReleaseNotesStatus = RNPosted | RNError
+  deriving stock (Eq, Generic, Read, Show)
+  deriving anyclass (FromJSON, ToJSON)
+
+derivePersistField "ReleaseNotesStatus"
+
 share
   [mkPersist sqlSettings, mkMigrate "migrateAll"]
   [persistLowerCase|
@@ -83,6 +89,13 @@ share
     status BackportStatus
     createdAt UTCTime default=now()
     UniqueBackportRecord sourcePrNumber repoFrId targetBranch
+    deriving Eq
+  ReleaseNotesRecord sql=release_notes_records
+    repoFrId Int
+    targetTag Text
+    status ReleaseNotesStatus
+    createdAt UTCTime default=now()
+    UniqueReleaseNotesRecord repoFrId targetTag
     deriving Eq
 |]
 
@@ -127,3 +140,8 @@ deriving stock instance Generic UserView
 deriving stock instance Show UserView
 deriving anyclass instance FromJSON UserView
 deriving anyclass instance ToJSON UserView
+
+deriving stock instance Generic ReleaseNotesRecord
+deriving stock instance Show ReleaseNotesRecord
+deriving anyclass instance FromJSON ReleaseNotesRecord
+deriving anyclass instance ToJSON ReleaseNotesRecord

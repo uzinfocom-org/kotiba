@@ -15,10 +15,12 @@
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    rna.url = "path:/home/xfeusw/workspace/congeries/release-notes-assistant";
   };
 
   outputs = { self, dream2nix, systems, nixpkgs, nixpkgs-unstable, git-hooks
-    , treefmt-nix }:
+    , treefmt-nix, rna }:
     let
       eachSystem = f:
         nixpkgs.lib.genAttrs (import systems)
@@ -133,6 +135,7 @@
 
               pkgs.jq
               pkgs.just
+              rna.packages.${pkgs.system}.default
             ] ++ self.checks.${pkgs.system}.pre-commit.enabledPackages;
 
             shellHook = ''

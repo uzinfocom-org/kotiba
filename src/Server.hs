@@ -55,7 +55,7 @@ run = do
       pool <- runStdoutLoggingT $ createPostgresqlPool (encodeUtf8 c.database) c.databasePoolSize
       manager <- newTlsManager
       baseUrl <- parseBaseUrl $ T.unpack c.forgejoUrl
-      fgToken <- liftIO . TIO.readFile $ T.unpack c.forgejoToken
+      fgToken <- liftIO . fmap T.strip . TIO.readFile $ T.unpack c.forgejoToken
       let cenv = mkClientEnv manager baseUrl
           fc = c{forgejoToken = fgToken}
           st = MkAppSt{config = fc, db = pool, forgejo = mkAppEnv cenv ("token " <> fgToken)}

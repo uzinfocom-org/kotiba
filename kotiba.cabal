@@ -26,10 +26,13 @@ library
     Database.Types
     Events.Backport
     Events.PullRequest
+    Events.ReleaseNotes
     Git.Backport
     Git.Core
     Git.PullRequest
     Kotiba.Prelude
+    RNA.Core
+    RNA.StorageMode
     Server
 
   build-depends:

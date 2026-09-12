@@ -12,7 +12,9 @@ import API.Util (errorFormatters)
 import Control.Monad (void)
 import Events.Backport (processBackport)
 import Events.PullRequest (processPrOpen)
+import Events.ReleaseNotes (processReleasePublished)
 import Forgejo hiding (User, userId)
+import Forgejo.Types.Release (ReleasePayload (..))
 import Kotiba.Prelude
 import Servant
 import Servant.Server.Generic
@@ -31,12 +33,16 @@ handleWebhook = \case
   WPPullRequest p -> onPullRequest p
   WPIssueComment p -> onIssueComment p
   WPActionRun p -> onActionRun p
+  WPRelease p -> onRelease p
 
 onPullRequest :: (AppState) => PullRequestPayload -> Handler ()
 onPullRequest = \case
   pl@PullRequestPayload{prpAction = PrOpened} -> void $ processPrOpen pl
   pl@PullRequestPayload{prpAction = (PrClosed; PrLabelUpdated)} -> processBackport pl
   _ -> pure ()
+
+onRelease :: (AppState) => ReleasePayload -> Handler ()
+onRelease = processReleasePublished
 
 onIssueComment :: (AppState) => IssueCommentPayload -> Handler ()
 onIssueComment _ = pure ()
