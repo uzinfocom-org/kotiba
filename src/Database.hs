@@ -5,10 +5,10 @@
 module Database where
 
 import Control.Monad (void)
-import Data.Maybe (listToMaybe)
+import Data.Maybe (fromMaybe, listToMaybe)
 import Data.Time (getCurrentTime)
 import Database.Esqueleto (Entity (..), runMigration)
-import Database.Persist (Key, PersistEntity, PersistEntityBackend, (==.))
+import Database.Persist (PersistEntity, PersistEntityBackend, (==.))
 import Database.Persist qualified as DB
 import Database.Persist.Sql (SqlBackend, SqlPersistT, runSqlPool, toSqlKey)
 import Database.Types
@@ -38,6 +38,39 @@ getById
   => Key (RecordOf e)
   -> m (Maybe e)
 getById _ i = withPoolDB $ DB.getEntity i
+
+{- | Get an entity by a unique constraint.
+Usage: getBy (type (Entity User)) (UniqueUsername "eshmat")
+-}
+getBy
+  :: forall e
+    ->( AppState
+      , MonadIO m
+      , PersistEntity (RecordOf e)
+      , PersistEntityBackend (RecordOf e) ~ SqlBackend
+      , e ~ Entity (RecordOf e)
+      )
+  => Unique (RecordOf e)
+  -> m (Maybe e)
+getBy _ u = withPoolDB $ DB.getBy u
+
+{- | Insert a record or update it if a matching entity already exists.
+Usage: upsert existing updates record
+-}
+upsert
+  :: ( AppState
+     , DB.SafeToInsert r
+     , MonadIO m
+     , PersistEntity r
+     , PersistEntityBackend r ~ SqlBackend
+     )
+  => Maybe (Entity r)
+  -> [DB.Update r]
+  -> r
+  -> m (Key r)
+upsert existing updates record =
+  fromMaybe (withPoolDB $ DB.insert record)
+    $ (\(Entity k _) -> k <$ withPoolDB (DB.update k updates)) <$> existing
 
 {- | Insert a new record and return its key.
 Usage: create (type (Entity User)) userRecord
@@ -162,3 +195,29 @@ getMaintainerUsernames repoFrId = do
     else do
       global <- getByRole (toSqlKey 1)
       pure [(entityVal u).userUsername | u <- global]
+
+releaseNotesExists :: (AppState, MonadIO m) => Int -> Text -> m Bool
+releaseNotesExists repoFrId tag =
+  withPoolDB
+    $ DB.exists
+      [ ReleaseNotesRecordRepoFrId ==. repoFrId
+      , ReleaseNotesRecordTargetTag ==. tag
+      ]
+
+recordReleaseNotes :: (AppState, MonadIO m) => Int -> Text -> ReleaseNotesStatus -> m ()
+recordReleaseNotes repoFrId tag status = do
+  now <- liftIO getCurrentTime
+  withPoolDB $ do
+    existing <- DB.getBy (UniqueReleaseNotesRecord repoFrId tag)
+    case existing of
+      Just (Entity key _) ->
+        DB.update key [ReleaseNotesRecordStatus DB.=. status, ReleaseNotesRecordCreatedAt DB.=. now]
+      Nothing ->
+        void
+          $ DB.insert
+            ReleaseNotesRecord
+              { releaseNotesRecordRepoFrId = repoFrId
+              , releaseNotesRecordTargetTag = tag
+              , releaseNotesRecordStatus = status
+              , releaseNotesRecordCreatedAt = now
+              }

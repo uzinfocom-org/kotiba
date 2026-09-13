@@ -8,7 +8,9 @@ import Control.Exception (SomeException, catch)
 import Control.Monad.Logger (runStdoutLoggingT)
 import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
+import Data.Text.IO qualified as TIO
 import Database.Persist.Postgresql (createPostgresqlPool)
+import Database.Seed (seedIfChanged)
 import Forgejo.App (mkAppEnv)
 import Kotiba.Prelude
 import Network.HTTP.Client.TLS (newTlsManager)
@@ -52,11 +54,14 @@ run = do
     Success _ c -> do
       pool <- runStdoutLoggingT $ createPostgresqlPool (encodeUtf8 c.database) c.databasePoolSize
       manager <- newTlsManager
-      baseUrl <- parseBaseUrl (T.unpack c.forgejoUrl)
+      baseUrl <- parseBaseUrl $ T.unpack c.forgejoUrl
+      fgToken <- liftIO . fmap T.strip . TIO.readFile $ T.unpack c.forgejoToken
       let cenv = mkClientEnv manager baseUrl
-      let st = MkAppSt{config = c, db = pool, forgejo = mkAppEnv cenv ("token " <> c.forgejoToken)}
-      let settings = setPort c.port $ setHost "*" defaultSettings
+          fc = c{forgejoToken = fgToken}
+          st = MkAppSt{config = fc, db = pool, forgejo = mkAppEnv cenv ("token " <> fgToken)}
+          settings = setPort c.port $ setHost "*" defaultSettings
       migrate' st
+      seedIfChanged st c.seedFile
       let ?st = st
       runSettings settings (catchExceptions runApi)
     Failure _ -> putStrLn "Failed to load config"

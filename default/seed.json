@@ -1,0 +1,134 @@
+{
+  "roles": [
+    {
+      "name": "maintainer"
+    },
+    {
+      "name": "contributor"
+    }
+  ],
+  "users": [
+    {
+      "login": "lambdajon",
+      "username": "lambdajon",
+      "frId": 12,
+      "role": "maintainer"
+    },
+    {
+      "login": "bahrom04",
+      "username": "bahrom04",
+      "frId": 7,
+      "role": "maintainer"
+    },
+    {
+      "login": "let_rec",
+      "username": "let_rec",
+      "frId": 13,
+      "role": "maintainer"
+    },
+    {
+      "login": "xfeusw",
+      "username": "xfeusw",
+      "frId": 14,
+      "role": "contributor"
+    },
+    {
+      "login": "rafanochi",
+      "username": "rafanochi",
+      "frId": 17,
+      "role": "contributor"
+    },
+    {
+      "login": "ezozbek36",
+      "username": "ezozbek36",
+      "frId": 15,
+      "role": "contributor"
+    },
+    {
+      "login": "dyrbk",
+      "username": "dyrbk",
+      "frId": 41,
+      "role": "contributor"
+    }
+  ],
+  "repositories": [
+    {
+      "frRepoId": 113,
+      "repoUrl": "https://git.oss.uzinfocom.uz/xinux/relago",
+      "repoName": "relago"
+    },
+    {
+      "frRepoId": 24,
+      "repoUrl": "https://git.oss.uzinfocom.uz/xinux/relago-support",
+      "repoName": "relago-support"
+    },
+    {
+      "frRepoId": 17,
+      "repoUrl": "https://git.oss.uzinfocom.uz/xinux/xeonitte",
+      "repoName": "xeonitte"
+    },
+
+    {
+      "frRepoId": 2,
+      "repoUrl": "https://git.oss.uzinfocom.uz/xinux/settings",
+      "repoName": "settings"
+    }
+  ],
+  "repoContributors": [
+    {
+      "repoName": "relago-support",
+      "username": "lambdajon",
+      "role": "maintainer"
+    },
+    {
+      "repoName": "relago-support",
+      "username": "xfeusw",
+      "role": "contributor"
+    },
+    {
+      "repoName": "relago",
+      "username": "lambdajon",
+      "role": "maintainer"
+    },
+    {
+      "repoName": "relago",
+      "username": "let_rec",
+      "role": "maintainer"
+    },
+    {
+      "repoName": "relago",
+      "username": "rafanochi",
+      "role": "contributor"
+    },
+    {
+      "repoName": "relago",
+      "username": "ezozbek36",
+      "role": "contributor"
+    },
+    {
+      "repoName": "xeonitte",
+      "username": "lambdajon",
+      "role": "maintainer"
+    },
+    {
+      "repoName": "xeonitte",
+      "username": "bahrom04",
+      "role": "maintainer"
+    },
+    {
+      "repoName": "xeonitte",
+      "username": "let_rec",
+      "role": "maintainer"
+    },
+    {
+      "repoName": "xeonitte",
+      "username": "rafanochi",
+      "role": "contributor"
+    },
+    {
+      "repoName": "xeonitte",
+      "username": "ezozbek36",
+      "role": "contributor"
+    }
+  ]
+}

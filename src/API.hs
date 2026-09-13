@@ -12,9 +12,9 @@ import API.Util (errorFormatters)
 import Control.Monad (void)
 import Events.Backport (processBackport)
 import Events.PullRequest (processPrOpen)
-import Events.Release (processRelease)
+import Events.ReleaseNotes (processReleasePublished)
 import Forgejo hiding (User, userId)
-import Forgejo.Types.Release (HookReleaseAction (..), ReleasePayload (..))
+import Forgejo.Types.Release (ReleasePayload (..))
 import Kotiba.Prelude
 import Servant
 import Servant.Server.Generic
@@ -41,6 +41,9 @@ onPullRequest = \case
   pl@PullRequestPayload{prpAction = (PrClosed; PrLabelUpdated)} -> processBackport pl
   _ -> pure ()
 
+onRelease :: (AppState) => ReleasePayload -> Handler ()
+onRelease = processReleasePublished
+
 onIssueComment :: (AppState) => IssueCommentPayload -> Handler ()
 onIssueComment _ = pure ()
 
@@ -49,10 +52,6 @@ onPush _ = pure ()
 
 onActionRun :: (AppState) => ActionRunPayload -> Handler ()
 onActionRun _ = pure ()
-
-onRelease = \case
-  pl@ReleasePayload{rpAction = RelPublished} -> processRelease pl
-  _ -> pure ()
 
 data ApiServer route = MkApiServer
   { api :: route :- NamedRoutes API

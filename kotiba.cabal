@@ -22,14 +22,17 @@ library
     API.Util
     Config
     Database
+    Database.Seed
     Database.Types
     Events.Backport
     Events.PullRequest
-    Events.Release
+    Events.ReleaseNotes
     Git.Backport
     Git.Core
     Git.PullRequest
     Kotiba.Prelude
+    RNA.Core
+    RNA.StorageMode
     Server
 
   build-depends:
