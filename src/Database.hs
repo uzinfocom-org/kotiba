@@ -173,8 +173,8 @@ backportSucceeded srcNum repoFrId target =
       Just (Entity _ r) -> backportRecordStatus r == BPOpened
       Nothing -> False
 
-getRepoMaintainers :: (AppState, MonadIO m) => Int -> m [Text]
-getRepoMaintainers repoFrId =
+getRepoUsersByRole :: (AppState, MonadIO m) => RoleId -> Int -> m [Text]
+getRepoUsersByRole role repoFrId =
   withPoolDB $ do
     mRepo <- DB.selectFirst [RepositoryFrRepoId ==. repoFrId] []
     case mRepo of
@@ -182,16 +182,20 @@ getRepoMaintainers repoFrId =
       Just (Entity repoKey _) -> do
         contribs <-
           DB.selectList
-            [RepoContributorsRepoId ==. repoKey, RepoContributorsRole ==. toSqlKey 1]
+            [RepoContributorsRepoId ==. repoKey, RepoContributorsRole ==. role]
             []
         users <- traverse (DB.get . (.repoContributorsUserId) . entityVal) contribs
         pure [u.userUsername | Just u <- users]
 
-getMaintainerUsernames :: (AppState, MonadIO m) => Int -> m [Text]
-getMaintainerUsernames repoFrId = do
-  perRepo <- getRepoMaintainers repoFrId
+getUsernamesByRole :: (AppState, MonadIO m) => RoleId -> Int -> m [Text]
+getUsernamesByRole role repoFrId = do
+  perRepo <- getRepoUsersByRole role repoFrId
   if not (null perRepo)
     then pure perRepo
     else do
-      global <- getByRole (toSqlKey 1)
+      global <- getByRole role
       pure [(entityVal u).userUsername | u <- global]
+
+getMaintainerUsernames, getContributorUsernames :: (AppState, MonadIO m) => Int -> m [Text]
+getMaintainerUsernames = getUsernamesByRole (toSqlKey 1)
+getContributorUsernames = getUsernamesByRole (toSqlKey 2)

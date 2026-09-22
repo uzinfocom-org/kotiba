@@ -8,6 +8,7 @@ import Data.Maybe (maybeToList)
 import Database qualified as DB
 import Database.Esqueleto (Entity (..), toSqlKey)
 import Database.Types qualified as DB
+import Forgejo.Types.Common (RepoId (..))
 import Forgejo
 import Forgejo.API.PullRequest (PullReviewRequest)
 import Git.PullRequest (assignReviewers)
@@ -18,12 +19,12 @@ import System.Random (randomRIO)
 
 processPrOpen :: (AppState) => PullRequestPayload -> Handler [PullReviewRequest]
 processPrOpen PullRequestPayload{..} = do
-  maintainers <- DB.getByRole $ toSqlKey 1
-  contributors <- DB.getByRole $ toSqlKey 2
-  luckyContributor <- maybeToList <$> pickRandom contributors
+  maintainerNames <- DB.getMaintainerUsernames repoFrId
+  contributorNames <- DB.getContributorUsernames repoFrId
+  luckyContributor <- maybeToList <$> pickRandom contributorNames
 
-  let reviewers = maintainers <> luckyContributor
-      usernames = excluding author [(entityVal x).userUsername | x <- reviewers]
+  let reviewers = maintainerNames <> luckyContributor
+      usernames = excluding author reviewers
 
   assignReviewers
     ! #owner orgName
@@ -37,8 +38,9 @@ processPrOpen PullRequestPayload{..} = do
   orgName = prpRepository.repoOwner.userLogin
   repoName = prpRepository.repoName
   index = prpPullRequest.prNumber
+  repoFrId = case prpRepository.repoId of RepoId rid -> fromIntegral rid
 
 -- FIXME: We'll move helper functions to independent like Prelude in future
-
 pickRandom :: (MonadIO m) => [a] -> m (Maybe a)
+pickRandom [] = pure Nothing
 pickRandom xs = (xs !?) <$> randomRIO (0, length xs - 1)
