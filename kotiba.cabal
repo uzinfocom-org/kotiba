@@ -23,6 +23,11 @@ library
     Config
     Database
     Database.Seed
+    Database.Seed.Bots
+    Database.Seed.Handlers
+    Database.Seed.Operations
+    Database.Seed.Runner
+    Database.Seed.Types
     Database.Types
     Events.Backport
     Events.PullRequest

@@ -10,7 +10,7 @@ import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.IO qualified as TIO
 import Database.Persist.Postgresql (createPostgresqlPool)
-import Database.Seed (seedIfChanged)
+import Database.Seed (seedIfChanged, syncBots)
 import Forgejo.App (mkAppEnv)
 import Kotiba.Prelude
 import Network.HTTP.Client.TLS (newTlsManager)
@@ -63,5 +63,6 @@ run = do
       migrate' st
       seedIfChanged st c.seedFile
       let ?st = st
+      syncBots c.bots
       runSettings settings (catchExceptions runApi)
     Failure _ -> putStrLn "Failed to load config"

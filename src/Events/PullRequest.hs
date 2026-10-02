@@ -6,11 +6,9 @@ module Events.PullRequest (processPrOpen) where
 import Data.List ((!?))
 import Data.Maybe (maybeToList)
 import Database qualified as DB
-import Database.Esqueleto (Entity (..), toSqlKey)
-import Database.Types qualified as DB
-import Forgejo.Types.Common (RepoId (..))
 import Forgejo
 import Forgejo.API.PullRequest (PullReviewRequest)
+import Forgejo.Types.Common (RepoId (..))
 import Git.PullRequest (assignReviewers)
 import Kotiba.Prelude
 import Named
