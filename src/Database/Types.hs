@@ -96,9 +96,7 @@ share
     backportPrNumber Int Maybe
     status BackportStatus
     createdAt UTCTime default=now()
-    UniqueBackportRecordSourcePrNumber sourcePrNumber
-    UniqueBackportRecordRepoFrId repoFrId
-    UniqueBackportRecordTargetBranch targetBranch
+    UniqueBackportRecord sourcePrNumber repoFrId targetBranch
     deriving Eq
   PullRequest sql=pull_requests
     repository RepositoryId
