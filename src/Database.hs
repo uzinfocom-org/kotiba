@@ -144,7 +144,7 @@ recordBackport :: (AppState, MonadIO m) => Int -> Int -> Text -> Maybe Int -> Ba
 recordBackport srcNum repoFrId target backportPrNum status = do
   now <- liftIO getCurrentTime
   withPoolDB $ do
-    existing <- DB.getBy (UniqueBackportRecord srcNum repoFrId target)
+    existing <- DB.getBy (UniqueBackportRecordSourcePrNumber srcNum)
     case existing of
       Just (Entity key _) ->
         DB.update
@@ -165,10 +165,10 @@ recordBackport srcNum repoFrId target backportPrNum status = do
               , backportRecordCreatedAt = now
               }
 
-backportSucceeded :: (AppState, MonadIO m) => Int -> Int -> Text -> m Bool
-backportSucceeded srcNum repoFrId target =
+backportSucceeded :: (AppState, MonadIO m) => Int -> m Bool
+backportSucceeded srcNum =
   withPoolDB $ do
-    mrec <- DB.getBy (UniqueBackportRecord srcNum repoFrId target)
+    mrec <- DB.getBy (UniqueBackportRecordSourcePrNumber srcNum)
     pure $ case mrec of
       Just (Entity _ r) -> backportRecordStatus r == BPOpened
       Nothing -> False

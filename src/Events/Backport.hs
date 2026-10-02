@@ -173,7 +173,7 @@ processBackport PullRequestPayload{..} = do
       repoFrId = fromIntegral @Int64 repoIdRaw
       cloneUrl = prpRepository.repoCloneUrl
   when pr.prMerged $ forM_ (backportTargets pr) $ \target -> do
-    succeeded <- DB.backportSucceeded pr.prNumber repoFrId target
+    succeeded <- DB.backportSucceeded pr.prNumber
     unless succeeded $ case pr.prMergeCommitSha of
       Nothing -> pure ()
       Just sha -> do
