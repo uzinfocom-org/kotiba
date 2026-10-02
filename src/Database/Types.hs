@@ -47,6 +47,18 @@ data BackportStatus = BPOpened | BPConflict | BPError
 
 derivePersistField "BackportStatus"
 
+data PullRequestState = Opened | Reopened | Closed | Merged
+  deriving stock (Eq, Generic, Read, Show)
+  deriving anyclass (FromJSON, ToJSON)
+
+derivePersistField "PullRequestState"
+
+data PREventKind = PROpened | PRReopened | PRClosed | PRMerged | Synchronized | Edited | Assigned | Unassigned | ReviewRequested | ReviewApproved | ReviewRejected | ReviewCommented | LabelChanged | Milestoned | Other
+  deriving stock (Eq, Generic, Read, Show)
+  deriving anyclass (FromJSON, ToJSON)
+
+derivePersistField "PREventKind"
+
 share
   [mkPersist sqlSettings, mkMigrate "migrateAll"]
   [persistLowerCase|
@@ -55,7 +67,7 @@ share
     username Text
     frId Int -- Forgejouser id
     role RoleId
-    UniqueUserFrId frId
+    UniqueUser login frId
     deriving Eq
   Repository sql=repositories
     frRepoId Int
@@ -73,7 +85,7 @@ share
     deriving Eq
   Role sql=roles
     name Text
-    UniqueRoleName name
+    UniqueRole name
     deriving Eq
   BackportRecord sql=backport_records
     sourcePrNumber Int
@@ -83,6 +95,50 @@ share
     status BackportStatus
     createdAt UTCTime default=now()
     UniqueBackportRecord sourcePrNumber repoFrId targetBranch
+    deriving Eq
+  PullRequest sql=pull_requests
+    repository RepositoryId
+    prFrNumber Int
+    author UserId
+    title Text
+    state PullRequestState
+    draft Bool
+    baseBranch BranchId
+    targetBranch BranchId
+    openedAt UTCTime default=now()
+    closedAt UTCTime Maybe
+    mergedAt UTCTime
+    mergedBy UserId
+    updatedAt UTCTime
+    deriving Eq
+  PullRequestEvent sql=pull_request_events
+    deliveryId Text
+    repository RepositoryId
+    pullRequest PullRequestId
+    kind PREventKind
+    actor Text
+    occuredAt UTCTime
+    receivedAt UTCTime default=now()
+    -- status PREventStatus
+    UniquePullRequestEvent deliveryId
+    deriving Eq
+  PullRequestFile sql=pull_request_files
+    repository RepositoryId
+    pullRequest PullRequestId
+    filename Text
+    deriving Eq
+  PullRequestCommit sql=pull_request_commits
+    repository RepositoryId
+    pullRequest PullRequestId
+    sha Text
+    author UserId
+    authoredAt UTCTime
+    isMerge Bool
+    deriving Eq
+  Branch sql=branches
+    title Text
+    createdAt UTCTime default=now()
+    updatedAt UTCTime
     deriving Eq
 |]
 
@@ -110,10 +166,45 @@ deriving stock instance Show Role
 deriving anyclass instance FromJSON Role
 deriving anyclass instance ToJSON Role
 
+type BackportRecord :: Type
+type BackportRecordId :: Type
+
 deriving stock instance Generic BackportRecord
 deriving stock instance Show BackportRecord
 deriving anyclass instance FromJSON BackportRecord
 deriving anyclass instance ToJSON BackportRecord
+
+type PullRequest :: Type
+type PullRequestId :: Type
+
+deriving stock instance Generic PullRequest
+deriving stock instance Show PullRequest
+deriving anyclass instance FromJSON PullRequest
+deriving anyclass instance ToJSON PullRequest
+
+type PullRequestEvent :: Type
+type PullRequestEventId :: Type
+
+deriving stock instance Generic PullRequestEvent
+deriving stock instance Show PullRequestEvent
+deriving anyclass instance FromJSON PullRequestEvent
+deriving anyclass instance ToJSON PullRequestEvent
+
+type PullRequestFile :: Type
+type PullRequestFileId :: Type
+
+deriving stock instance Generic PullRequestFile
+deriving stock instance Show PullRequestFile
+deriving anyclass instance FromJSON PullRequestFile
+deriving anyclass instance ToJSON PullRequestFile
+
+type Branch :: Type
+type BranchId :: Type
+
+deriving stock instance Generic Branch
+deriving stock instance Show Branch
+deriving anyclass instance FromJSON Branch
+deriving anyclass instance ToJSON Branch
 
 genRec ''Role
 genRec ''User
