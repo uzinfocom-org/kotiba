@@ -12,6 +12,14 @@ import Toml.Schema (FromValue, ToTable, ToValue)
 import Toml.Schema.Generic (GenericTomlTable (..))
 import Toml.Schema.Matcher (Result (..))
 
+type BotAccount :: Type
+data BotAccount = BotAccount
+  { login :: !Text
+  , frId :: !Int
+  }
+  deriving (Eq, Generic, Show)
+  deriving (FromValue, ToTable, ToValue) via GenericTomlTable BotAccount
+
 type Config :: Type
 data Config = Config
   { dataDir :: !FilePath
@@ -23,6 +31,7 @@ data Config = Config
   , identityName :: !Text
   , identityEmail :: !Text
   , seedFile :: !FilePath
+  , bots :: ![BotAccount]
   }
   deriving (Eq, Generic, Show)
   deriving (FromValue, ToTable, ToValue) via GenericTomlTable Config

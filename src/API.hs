@@ -31,6 +31,7 @@ handleWebhook = \case
   WPPullRequest p -> onPullRequest p
   WPIssueComment p -> onIssueComment p
   WPActionRun p -> onActionRun p
+  _ -> pure ()
 
 onPullRequest :: (AppState) => PullRequestPayload -> Handler ()
 onPullRequest = \case
