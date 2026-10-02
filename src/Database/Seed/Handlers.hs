@@ -56,7 +56,7 @@ seedContributor SeedContributor{..} = do
   mRoleid <- lookupRef cRole "role" (.roleMap)
   case (mRid, mUid, mRoleid) of
     (Just rid, Just uid, Just roleid) -> do
-      existing <- getBy (type (Entity RepoContributors)) (UniqueRepoContributor rid uid)
+      existing <- getBy (type (Entity RepoContributors)) (UniqueRepoContributorRepoId rid)
       void
         $ upsert
           existing

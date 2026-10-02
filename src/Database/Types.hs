@@ -67,7 +67,8 @@ share
     username Text
     frId Int -- Forgejouser id
     role RoleId
-    UniqueUser login frId
+    UniqueUserLogin login
+    UniqueUserFrId frId
     deriving Eq
   Repository sql=repositories
     frRepoId Int
@@ -81,11 +82,12 @@ share
     repoId RepositoryId
     userId UserId
     role RoleId
-    UniqueRepoContributor repoId userId
+    UniqueRepoContributorRepoId repoId
+    UniqueRepoContributorUserId userId
     deriving Eq
   Role sql=roles
     name Text
-    UniqueRole name
+    UniqueRoleName name
     deriving Eq
   BackportRecord sql=backport_records
     sourcePrNumber Int
@@ -94,7 +96,9 @@ share
     backportPrNumber Int Maybe
     status BackportStatus
     createdAt UTCTime default=now()
-    UniqueBackportRecord sourcePrNumber repoFrId targetBranch
+    UniqueBackportRecordSourcePrNumber sourcePrNumber
+    UniqueBackportRecordRepoFrId repoFrId
+    UniqueBackportRecordTargetBranch targetBranch
     deriving Eq
   PullRequest sql=pull_requests
     repository RepositoryId
@@ -120,7 +124,7 @@ share
     occuredAt UTCTime
     receivedAt UTCTime default=now()
     -- status PREventStatus
-    UniquePullRequestEvent deliveryId
+    UniquePullRequestEventDeliveryId deliveryId
     deriving Eq
   PullRequestFile sql=pull_request_files
     repository RepositoryId
