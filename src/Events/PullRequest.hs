@@ -16,7 +16,15 @@ import Servant (Handler)
 import System.Random (randomRIO)
 
 processPrOpen :: (AppState) => PullRequestPayload -> Handler [PullReviewRequest]
-processPrOpen PullRequestPayload{..} = do
+processPrOpen prp = processReviewers prp
+
+-- FIXME: We'll move helper functions to independent like Prelude in future
+pickRandom :: (MonadIO m) => [a] -> m (Maybe a)
+pickRandom [] = pure Nothing
+pickRandom xs = (xs !?) <$> randomRIO (0, length xs - 1)
+
+processReviewers :: (AppState) => PullRequestPayload -> Handler [PullReviewRequest]
+processReviewers PullRequestPayload{..} = do
   maintainerNames <- DB.getMaintainerUsernames repoFrId
   contributorNames <- DB.getContributorUsernames repoFrId
   luckyContributor <- maybeToList <$> pickRandom contributorNames
@@ -37,8 +45,3 @@ processPrOpen PullRequestPayload{..} = do
   repoName = prpRepository.repoName
   index = prpPullRequest.prNumber
   repoFrId = case prpRepository.repoId of RepoId rid -> fromIntegral rid
-
--- FIXME: We'll move helper functions to independent like Prelude in future
-pickRandom :: (MonadIO m) => [a] -> m (Maybe a)
-pickRandom [] = pure Nothing
-pickRandom xs = (xs !?) <$> randomRIO (0, length xs - 1)

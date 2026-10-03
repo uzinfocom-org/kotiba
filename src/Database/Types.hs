@@ -47,17 +47,57 @@ data BackportStatus = BPOpened | BPConflict | BPError
 
 derivePersistField "BackportStatus"
 
-data PullRequestState = Opened | Reopened | Closed | Merged
+-- | A merged PR is 'StateMerged', never 'StateClosed'. A reopened PR is just open again.
+data PullRequestState = StateOpen | StateClosed | StateMerged
   deriving stock (Eq, Generic, Read, Show)
   deriving anyclass (FromJSON, ToJSON)
 
 derivePersistField "PullRequestState"
 
-data PREventKind = PROpened | PRReopened | PRClosed | PRMerged | Synchronized | Edited | Assigned | Unassigned | ReviewRequested | ReviewApproved | ReviewRejected | ReviewCommented | LabelChanged | Milestoned | Other
+{- | What happened in one delivery. Constructors are stored as text by name,
+so renaming one after real data exists orphans old rows.
+-}
+data PREventKind
+  = PROpened
+  | PRReopened
+  | PRClosed
+  | PRMerged
+  | PRSynchronized
+  | PREdited
+  | PRAssigned
+  | PRUnassigned
+  | PRReviewRequested
+  | PRReviewApproved
+  | PRReviewRejected
+  | PRReviewCommented
+  | PRLabelChanged
+  | PRMilestoned
+  | PROther
   deriving stock (Eq, Generic, Read, Show)
   deriving anyclass (FromJSON, ToJSON)
 
 derivePersistField "PREventKind"
+
+-- | How far the worker got with an event.
+data PREventStatus = EventReceived | EventDone | EventFailed
+  deriving stock (Eq, Generic, Read, Show)
+  deriving anyclass (FromJSON, ToJSON)
+
+derivePersistField "PREventStatus"
+
+-- | Forgejo's changed-file status. Anything unknown maps to 'FileOther'.
+data PullRequestFileStatus
+  = FileAdded
+  | FileChanged
+  | FileDeleted
+  | FileRenamed
+  | FileCopied
+  | FileUnchanged
+  | FileOther
+  deriving stock (Eq, Generic, Read, Show)
+  deriving anyclass (FromJSON, ToJSON)
+
+derivePersistField "PullRequestFileStatus"
 
 share
   [mkPersist sqlSettings, mkMigrate "migrateAll"]
@@ -67,7 +107,6 @@ share
     username Text
     frId Int -- Forgejouser id
     role RoleId
-    UniqueUserLogin login
     UniqueUserFrId frId
     deriving Eq
   Repository sql=repositories
@@ -82,8 +121,7 @@ share
     repoId RepositoryId
     userId UserId
     role RoleId
-    UniqueRepoContributorRepoId repoId
-    UniqueRepoContributorUserId userId
+    UniqueRepoContributor repoId userId
     deriving Eq
   Role sql=roles
     name Text
@@ -100,47 +138,43 @@ share
     deriving Eq
   PullRequest sql=pull_requests
     repository RepositoryId
-    prFrNumber Int
+    number Int
     author UserId
     title Text
     state PullRequestState
     draft Bool
-    baseBranch BranchId
-    targetBranch BranchId
-    openedAt UTCTime default=now()
+    baseBranch Text
+    openedAt UTCTime
     closedAt UTCTime Maybe
-    mergedAt UTCTime
-    mergedBy UserId
+    mergedAt UTCTime Maybe
+    mergedBy UserId Maybe
     updatedAt UTCTime
+    UniquePullRequest repository number
     deriving Eq
   PullRequestEvent sql=pull_request_events
     deliveryId Text
-    repository RepositoryId
     pullRequest PullRequestId
     kind PREventKind
-    actor Text
-    occuredAt UTCTime
+    actor UserId
+    occurredAt UTCTime
     receivedAt UTCTime default=now()
-    -- status PREventStatus
+    status PREventStatus
     UniquePullRequestEventDeliveryId deliveryId
     deriving Eq
   PullRequestFile sql=pull_request_files
-    repository RepositoryId
     pullRequest PullRequestId
     filename Text
+    status PullRequestFileStatus
+    UniquePullRequestFile pullRequest filename
     deriving Eq
   PullRequestCommit sql=pull_request_commits
-    repository RepositoryId
     pullRequest PullRequestId
     sha Text
-    author UserId
+    author UserId Maybe -- Nothing when the git email matches no Forgejo user
+    authorName Text
     authoredAt UTCTime
     isMerge Bool
-    deriving Eq
-  Branch sql=branches
-    title Text
-    createdAt UTCTime default=now()
-    updatedAt UTCTime
+    UniquePullRequestCommit pullRequest sha
     deriving Eq
 |]
 
@@ -200,13 +234,13 @@ deriving stock instance Show PullRequestFile
 deriving anyclass instance FromJSON PullRequestFile
 deriving anyclass instance ToJSON PullRequestFile
 
-type Branch :: Type
-type BranchId :: Type
+type PullRequestCommit :: Type
+type PullRequestCommitId :: Type
 
-deriving stock instance Generic Branch
-deriving stock instance Show Branch
-deriving anyclass instance FromJSON Branch
-deriving anyclass instance ToJSON Branch
+deriving stock instance Generic PullRequestCommit
+deriving stock instance Show PullRequestCommit
+deriving anyclass instance FromJSON PullRequestCommit
+deriving anyclass instance ToJSON PullRequestCommit
 
 genRec ''Role
 genRec ''User

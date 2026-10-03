@@ -1,20 +1,40 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Database.Seed.Types where
 
 import Control.Monad.State (StateT)
-import Data.Aeson (FromJSON)
+import Data.Aeson (FromJSON (..), genericParseJSON)
+import Data.Aeson.Types (Options (..), defaultOptions)
 import Data.Map.Strict (Map)
 import Data.Text (Text)
 import Database.Types
 import GHC.Generics (Generic)
+
+-- | Haskell field name -> key used in seed.json.
+jsonKey :: String -> String
+jsonKey = \case
+  "rName" -> "name"
+  "uLogin" -> "login"
+  "uUsername" -> "username"
+  "uFrId" -> "frId"
+  "uRole" -> "role"
+  "pId" -> "frRepoId"
+  "pUrl" -> "repoUrl"
+  "pName" -> "repoName"
+  "cRepo" -> "repoName"
+  "cUser" -> "username"
+  "cRole" -> "role"
+  other -> other
+
+seedOptions :: Options
+seedOptions = defaultOptions{fieldLabelModifier = jsonKey}
 
 -- | Represents a single role definition to seed.
 newtype SeedRole = SeedRole
   { rName :: Text
   }
   deriving stock (Generic)
-  deriving anyclass (FromJSON)
+
+instance FromJSON SeedRole where
+  parseJSON = genericParseJSON seedOptions
 
 -- | Represents a user record to seed.
 data SeedUser = SeedUser
@@ -24,7 +44,9 @@ data SeedUser = SeedUser
   , uRole :: !Text
   }
   deriving stock (Generic)
-  deriving anyclass (FromJSON)
+
+instance FromJSON SeedUser where
+  parseJSON = genericParseJSON seedOptions
 
 -- | Represents a repository record to seed.
 data SeedRepository = SeedRepository
@@ -33,7 +55,9 @@ data SeedRepository = SeedRepository
   , pName :: !Text
   }
   deriving stock (Generic)
-  deriving anyclass (FromJSON)
+
+instance FromJSON SeedRepository where
+  parseJSON = genericParseJSON seedOptions
 
 -- | Represents a contributor record to seed.
 data SeedContributor = SeedContributor
@@ -42,7 +66,9 @@ data SeedContributor = SeedContributor
   , cRole :: !Text
   }
   deriving stock (Generic)
-  deriving anyclass (FromJSON)
+
+instance FromJSON SeedContributor where
+  parseJSON = genericParseJSON seedOptions
 
 -- | Root container holding all parsed seed lists from the file.
 data SeedData = SeedData

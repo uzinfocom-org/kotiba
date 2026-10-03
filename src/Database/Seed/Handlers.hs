@@ -1,3 +1,5 @@
+{-# LANGUAGE RequiredTypeArguments #-}
+
 module Database.Seed.Handlers where
 
 import Control.Monad (void)
@@ -48,7 +50,7 @@ seedRepository SeedRepository{..} = do
       Repository{repositoryFrRepoId = pId, repositoryRepoUrl = pUrl, repositoryRepoName = pName}
   insertMap pName k (.repoMap) (\m s -> s{repoMap = m})
 
--- | Upsert a repository contributor assiciation requiring resolved repo, user, and role IDs.
+-- | Upsert a repository contributor association requiring resolved repo, user, and role IDs.
 seedContributor :: (AppState, MonadIO m) => SeedContributor -> SeedM m ()
 seedContributor SeedContributor{..} = do
   mRid <- lookupRef cRepo "repository" (.repoMap)
@@ -56,7 +58,7 @@ seedContributor SeedContributor{..} = do
   mRoleid <- lookupRef cRole "role" (.roleMap)
   case (mRid, mUid, mRoleid) of
     (Just rid, Just uid, Just roleid) -> do
-      existing <- getBy (type (Entity RepoContributors)) (UniqueRepoContributorRepoId rid)
+      existing <- getBy (type (Entity RepoContributors)) (UniqueRepoContributor rid uid)
       void
         $ upsert
           existing
