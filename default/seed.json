@@ -27,7 +27,7 @@
       "login": "let_rec",
       "username": "let_rec",
       "frId": 13,
-      "role": "maintainer"
+      "role": "contributor"
     },
     {
       "login": "xfeusw",
@@ -75,6 +75,26 @@
       "frRepoId": 2,
       "repoUrl": "https://git.oss.uzinfocom.uz/xinux/settings",
       "repoName": "settings"
+    },
+    {
+      "frRepoId": 292,
+      "repoUrl": "https://git.oss.uzinfocom.uz/uzinfocom/kotiba",
+      "repoName": "kotiba"
+    },
+    {
+      "frRepoId": 311,
+      "repoUrl": "https://git.oss.uzinfocom.uz/uzinfocom/forgejo",
+      "repoName": "forgejo"
+    },
+    {
+      "frRepoId": 253,
+      "repoUrl": "https://git.oss.uzinfocom.uz/uchar/sygnal",
+      "repoName": "sygnal"
+    },
+    {
+      "frRepoId": 298,
+      "repoUrl": "https://git.oss.uzinfocom.uz/uchar/bulbul",
+      "repoName": "bulbul"
     }
   ],
   "repoContributors": [
@@ -96,7 +116,7 @@
     {
       "repoName": "relago",
       "username": "let_rec",
-      "role": "maintainer"
+      "role": "contributor"
     },
     {
       "repoName": "relago",
@@ -121,7 +141,7 @@
     {
       "repoName": "xeonitte",
       "username": "let_rec",
-      "role": "maintainer"
+      "role": "contributor"
     },
     {
       "repoName": "xeonitte",
@@ -132,6 +152,41 @@
       "repoName": "xeonitte",
       "username": "ezozbek36",
       "role": "contributor"
+    },
+    {
+      "repoName": "kotiba",
+      "username": "lambdajon",
+      "role": "maintainer"
+    },
+    {
+      "repoName": "kotiba",
+      "username": "xfeusw",
+      "role": "contributor"
+    },
+    {
+      "repoName": "forgejo",
+      "username": "lambdajon",
+      "role": "maintainer"
+    },
+    {
+      "repoName": "forgejo",
+      "username": "xfeusw",
+      "role": "contributor"
+    },
+    {
+      "repoName": "sygnal",
+      "username": "lambdajon",
+      "role": "maintainer"
+    },
+    {
+      "repoName": "sygnal",
+      "username": "xfeusw",
+      "role": "contributor"
+    },
+    {
+      "repoName": "bulbul",
+      "username": "xfeusw",
+      "role": "maintainer"
     }
   ]
 }
