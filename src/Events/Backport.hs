@@ -1,21 +1,18 @@
 {-# LANGUAGE MultilineStrings #-}
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
 
 module Events.Backport where
 
-import Control.Monad (forM_, unless, void, when)
-import Data.Int (Int64)
+import Control.Monad (forM_, unless, when)
 import Data.Maybe (mapMaybe)
 import Data.Text qualified as T
 import Database qualified as DB
-import Database.Types (BackportStatus (..))
+import Database.Types (BackportStatus (..), FrId)
 import Forgejo.Error (ForgejoError (..))
 import Forgejo.Methods.Issue (createIssueComment)
 import Forgejo.Methods.PullRequest (createPullRequest)
-import Forgejo.Types.Common (RepoId (..))
 import Forgejo.Types.CreateIssueCommentOption (CreateIssueCommentApiOption (..), CreateIssueCommentOption (..))
 import Forgejo.Types.CreatePullRequestOption (CreatePullRequestOption (..))
 import Forgejo.Types.Label (Label (..))
@@ -143,7 +140,7 @@ backportFailureComment maintainers target diagnostic =
 {- | This function is used to create comment about failure while backporting in source PR.
 It uses 'createIssueComment' method and 'CreateIssueCommentOption' from 'Forgejo' library for commenting.
 -}
-commentOnFailure :: (AppState) => Text -> Text -> Int -> Int -> Text -> Text -> Handler ()
+commentOnFailure :: (AppState) => Text -> Text -> Int -> FrId -> Text -> Text -> Handler ()
 commentOnFailure owner repo prNumber repoFrId target diagnostic = do
   maintainers <- DB.getMaintainerUsernames repoFrId
   let body = backportFailureComment maintainers target diagnostic
@@ -169,11 +166,10 @@ processBackport PullRequestPayload{..} = do
   let pr = prpPullRequest
       owner = prpRepository.repoOwner.userLogin
       repo = prpRepository.repoName
-      RepoId repoIdRaw = prpRepository.repoId
-      repoFrId = fromIntegral @Int64 repoIdRaw
+      repoFrId = DB.frRepo prpRepository.repoId
       cloneUrl = prpRepository.repoCloneUrl
   when pr.prMerged $ forM_ (backportTargets pr) $ \target -> do
-    succeeded <- DB.backportSucceeded pr.prNumber repoFrId target
+    succeeded <- DB.backportSucceeded repoFrId pr.prNumber target
     unless succeeded $ case pr.prMergeCommitSha of
       Nothing -> pure ()
       Just sha -> do
@@ -190,16 +186,16 @@ processBackport PullRequestPayload{..} = do
               ! #sha sha
         case result of
           Left gitErr -> do
-            DB.recordBackport pr.prNumber repoFrId target Nothing BPError
+            DB.recordBackport repoFrId pr.prNumber target Nothing BPError
             commentOnFailure owner repo pr.prNumber repoFrId target (renderGitError gitErr)
           Right (BackportConflict diagnostic) -> do
-            DB.recordBackport pr.prNumber repoFrId target Nothing BPConflict
+            DB.recordBackport repoFrId pr.prNumber target Nothing BPConflict
             commentOnFailure owner repo pr.prNumber repoFrId target diagnostic
           Right (BackportPushed _ branch) -> do
             let opts = backportPullRequestOption pr target branch
             prRes <- tryForgejo $ createPullRequest owner repo opts
             case prRes of
               Left fgErr -> do
-                DB.recordBackport pr.prNumber repoFrId target Nothing BPError
+                DB.recordBackport repoFrId pr.prNumber target Nothing BPError
                 commentOnFailure owner repo pr.prNumber repoFrId target (renderForgejoError fgErr)
-              Right newPr -> DB.recordBackport pr.prNumber repoFrId target (Just newPr.prNumber) BPOpened
+              Right newPr -> DB.recordBackport repoFrId pr.prNumber target (Just newPr.prNumber) BPOpened

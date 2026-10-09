@@ -22,10 +22,20 @@ library
     API.Util
     Config
     Database
+    Database.PullRequest
     Database.Seed
+    Database.Seed.Bots
+    Database.Seed.Error
+    Database.Seed.Handlers
+    Database.Seed.Operations
+    Database.Seed.Runner
+    Database.Seed.Types
     Database.Types
     Events.Backport
     Events.PullRequest
+    Events.Tracking
+    Events.Tracking.Job
+    Events.Tracking.Worker
     Git.Backport
     Git.Core
     Git.PullRequest

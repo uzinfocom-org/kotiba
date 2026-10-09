@@ -22,6 +22,10 @@ import Database.Persist.TH
 import GHC.Generics (Generic)
 import Web.PathPieces (PathPiece (..))
 
+newtype FrId = FrId Int
+  deriving stock (Generic)
+  deriving newtype (Eq, FromJSON, Ord, PersistField, PersistFieldSql, Show, ToJSON)
+
 instance PersistField UUID where
   toPersistValue = PersistText . UUID.toText
   fromPersistValue = \case
@@ -47,18 +51,70 @@ data BackportStatus = BPOpened | BPConflict | BPError
 
 derivePersistField "BackportStatus"
 
+-- | A merged PR is 'StateMerged', never 'StateClosed'. A reopened PR is just open again.
+data PullRequestState = StateOpen | StateClosed | StateMerged
+  deriving stock (Eq, Generic, Read, Show)
+  deriving anyclass (FromJSON, ToJSON)
+
+derivePersistField "PullRequestState"
+
+{- | What happened in one delivery. Constructors are stored as text by name,
+so renaming one after real data exists orphans old rows.
+-}
+data PREventKind
+  = PROpened
+  | PRReopened
+  | PRClosed
+  | PRMerged
+  | PRSynchronized
+  | PREdited
+  | PRAssigned
+  | PRUnassigned
+  | PRReviewRequested
+  | PRReviewApproved
+  | PRReviewRejected
+  | PRReviewCommented
+  | PRLabelChanged
+  | PRMilestoned
+  | PROther
+  deriving stock (Eq, Generic, Read, Show)
+  deriving anyclass (FromJSON, ToJSON)
+
+derivePersistField "PREventKind"
+
+-- | How far the worker got with an event.
+data PREventStatus = EventReceived | EventDone | EventFailed
+  deriving stock (Eq, Generic, Read, Show)
+  deriving anyclass (FromJSON, ToJSON)
+
+derivePersistField "PREventStatus"
+
+-- | Forgejo's changed-file status. Anything unknown maps to 'FileOther'.
+data PullRequestFileStatus
+  = FileAdded
+  | FileChanged
+  | FileDeleted
+  | FileRenamed
+  | FileCopied
+  | FileUnchanged
+  | FileOther
+  deriving stock (Eq, Generic, Read, Show)
+  deriving anyclass (FromJSON, ToJSON)
+
+derivePersistField "PullRequestFileStatus"
+
 share
   [mkPersist sqlSettings, mkMigrate "migrateAll"]
   [persistLowerCase|
   User sql=users
     login Text
     username Text
-    frId Int -- Forgejouser id
-    role RoleId
+    frId FrId -- Forgejouser id
+    role RoleId Maybe
     UniqueUserFrId frId
     deriving Eq
   Repository sql=repositories
-    frRepoId Int
+    frRepoId FrId
     repoUrl Text -- repository.clone_url
     repoName Text -- repository.full_name
     UniqueRepositoryFrRepoId frRepoId
@@ -77,12 +133,55 @@ share
     deriving Eq
   BackportRecord sql=backport_records
     sourcePrNumber Int
-    repoFrId Int
+    repoFrId FrId
     targetBranch Text
     backportPrNumber Int Maybe
     status BackportStatus
     createdAt UTCTime default=now()
     UniqueBackportRecord sourcePrNumber repoFrId targetBranch
+    deriving Eq
+  PullRequest sql=pull_requests
+    repository RepositoryId
+    number Int
+    author UserId
+    title Text
+    state PullRequestState
+    draft Bool
+    baseBranch Text
+    openedAt UTCTime
+    closedAt UTCTime Maybe
+    mergedAt UTCTime Maybe
+    mergedBy UserId Maybe
+    updatedAt UTCTime
+    filesSyncedAt UTCTime Maybe
+    UniquePullRequest repository number
+    deriving Eq
+  PullRequestEvent sql=pull_request_events
+    deliveryId Text
+    pullRequest PullRequestId
+    kind PREventKind
+    actor UserId
+    occurredAt UTCTime
+    receivedAt UTCTime default=now()
+    status PREventStatus
+    failure Text Maybe
+    UniquePullRequestEventDeliveryId deliveryId
+    deriving Eq
+  PullRequestFile sql=pull_request_files
+    pullRequest PullRequestId
+    filename Text
+    status PullRequestFileStatus
+    removedAt UTCTime Maybe
+    UniquePullRequestFile pullRequest filename
+    deriving Eq
+  PullRequestCommit sql=pull_request_commits
+    pullRequest PullRequestId
+    sha Text
+    author UserId Maybe -- Nothing when the git email matches no Forgejo user
+    authorName Text
+    authoredAt UTCTime
+    isMerge Bool
+    UniquePullRequestCommit pullRequest sha
     deriving Eq
 |]
 
@@ -110,10 +209,45 @@ deriving stock instance Show Role
 deriving anyclass instance FromJSON Role
 deriving anyclass instance ToJSON Role
 
+type BackportRecord :: Type
+type BackportRecordId :: Type
+
 deriving stock instance Generic BackportRecord
 deriving stock instance Show BackportRecord
 deriving anyclass instance FromJSON BackportRecord
 deriving anyclass instance ToJSON BackportRecord
+
+type PullRequest :: Type
+type PullRequestId :: Type
+
+deriving stock instance Generic PullRequest
+deriving stock instance Show PullRequest
+deriving anyclass instance FromJSON PullRequest
+deriving anyclass instance ToJSON PullRequest
+
+type PullRequestEvent :: Type
+type PullRequestEventId :: Type
+
+deriving stock instance Generic PullRequestEvent
+deriving stock instance Show PullRequestEvent
+deriving anyclass instance FromJSON PullRequestEvent
+deriving anyclass instance ToJSON PullRequestEvent
+
+type PullRequestFile :: Type
+type PullRequestFileId :: Type
+
+deriving stock instance Generic PullRequestFile
+deriving stock instance Show PullRequestFile
+deriving anyclass instance FromJSON PullRequestFile
+deriving anyclass instance ToJSON PullRequestFile
+
+type PullRequestCommit :: Type
+type PullRequestCommitId :: Type
+
+deriving stock instance Generic PullRequestCommit
+deriving stock instance Show PullRequestCommit
+deriving anyclass instance FromJSON PullRequestCommit
+deriving anyclass instance ToJSON PullRequestCommit
 
 genRec ''Role
 genRec ''User

@@ -2,6 +2,7 @@
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OrPatterns #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 
@@ -12,6 +13,8 @@ import API.Util (errorFormatters)
 import Control.Monad (void)
 import Events.Backport (processBackport)
 import Events.PullRequest (processPrOpen)
+import Events.Tracking.Job (TrackJob (..))
+import Events.Tracking.Worker (enqueue)
 import Forgejo hiding (User, userId)
 import Kotiba.Prelude
 import Servant
@@ -25,12 +28,25 @@ data API route = MkAPI
   }
   deriving stock (Generic)
 
-handleWebhook :: (AppState) => WebhookPayload -> Handler ()
-handleWebhook = \case
-  WPPush p -> onPush p
-  WPPullRequest p -> onPullRequest p
-  WPIssueComment p -> onIssueComment p
-  WPActionRun p -> onActionRun p
+{- | This function handles payload of webhook.
+Pull request events are put in tracking queue first, after that they go to 'onPullRequest' as before.
+-}
+handleWebhook :: (AppState) => Delivery -> WebhookPayload -> Handler ()
+handleWebhook d (WPPullRequest p) = do
+  track d p
+  onPullRequest p
+handleWebhook _ (WPPush p) = onPush p
+handleWebhook _ (WPIssueComment p) = onIssueComment p
+handleWebhook _ (WPActionRun p) = onActionRun p
+handleWebhook _ (WPRelease _) = pure ()
+
+{- | This function puts pull request event in the queue of tracking worker.
+Delivery id is the key of event, so request without it gets 400.
+-}
+track :: (AppState) => Delivery -> PullRequestPayload -> Handler ()
+track d p = do
+  delivery <- pure d.deliveryId !? err400{errBody = "missing X-Forgejo-Delivery header"}
+  enqueue $ TrackJob delivery p
 
 onPullRequest :: (AppState) => PullRequestPayload -> Handler ()
 onPullRequest = \case
@@ -60,7 +76,7 @@ apiHandlers =
   MkAPI
     { health = heal
     , dev = devHandlers
-    , webhook = webhookHandler handleWebhook
+    , webhook = webhookHandlerWith handleWebhook
     }
 
 heal :: (AppState) => Handler Integer

@@ -61,7 +61,7 @@
           "hash": "sha256-Lj9AIkUQ1ph8l1Bc6HLWuuLei43E8tfBpHxYG/XZM78="
         }
       },
-      "bfnctrs-5.6.3-44347f02": {
+      "bfnctrs-5.6.3-991ac523": {
         "name": "bifunctors",
         "version": "5.6.3",
         "cabal": {
@@ -109,7 +109,7 @@
           "hash": "sha256-Zwz4gcMx5lf9EhlRA1afCDT27x/WG3KFo1F9yj6qzIs="
         }
       },
-      "brng-0.2.2.1-22475a57": {
+      "brng-0.2.2.1-f48dde45": {
         "name": "boring",
         "version": "0.2.2.1",
         "cabal": {
@@ -301,7 +301,7 @@
           "hash": "sha256-NvAF43qCGqg+rmrmb39sStmvdvvjSYBz6U9rzdqdMVM="
         }
       },
-      "cmnd-5.0.10-43c43e58": {
+      "cmnd-5.0.10-de8a1d48": {
         "name": "comonad",
         "version": "5.0.10",
         "cabal": {
@@ -337,7 +337,7 @@
           "hash": "sha256-1i/yFTYgIsU/1lKJz3a38aLfdcBcJdy0sWPvmVtgGUc="
         }
       },
-      "cndt-xtr-1.3.8-e4930d8a": {
+      "cndt-xtr-1.3.8-6ad47aa7": {
         "name": "conduit-extra",
         "version": "1.3.8",
         "cabal": {
@@ -349,7 +349,7 @@
           "hash": "sha256-DdeDYIUuRcIvSQbUPdOzGGyHRA8dJqbuuqoi6x6xKQA="
         }
       },
-      "cnstrnts-0.14.4-dfc23aa3": {
+      "cnstrnts-0.14.4-1a05f09d": {
         "name": "constraints",
         "version": "0.14.4",
         "cabal": {
@@ -409,19 +409,19 @@
           "hash": "sha256-mCV/repGQDdXkSnXypSccTtzkZTdevB4qA/60glEVYI="
         }
       },
-      "cryptn-1.1.5-04ab3a66": {
+      "cryptn-2.1.9-81c8a6c9": {
         "name": "crypton",
-        "version": "1.1.5",
+        "version": "2.1.9",
         "cabal": {
-          "url": "https://hackage.haskell.org/package/crypton-1.1.5/revision/0.cabal",
-          "hash": "sha256-eSBo3hnsPnU2e6UvW7aMKwH3YYL5042fy27M/s6PUig="
+          "url": "https://hackage.haskell.org/package/crypton-2.1.9/revision/0.cabal",
+          "hash": "sha256-PnWwrHXguYhP2ybfxDW2UyGd4hwzwb9aBo6xUWesqeY="
         },
         "src": {
-          "url": "http://hackage.haskell.org/package/crypton/crypton-1.1.5.tar.gz",
-          "hash": "sha256-FqnlfyphXpiObcs2uBis/2ATxHBBmnYPRcbREIVpAhA="
+          "url": "http://hackage.haskell.org/package/crypton/crypton-2.1.9.tar.gz",
+          "hash": "sha256-iqvkHnjVZyIcQDfl0Pt7Fi60pCz8YwGaIukuCFtgj8w="
         }
       },
-      "cryptn-cnnctn-0.4.6-172ba6ee": {
+      "cryptn-cnnctn-0.4.6-7d38d25e": {
         "name": "crypton-connection",
         "version": "0.4.6",
         "cabal": {
@@ -493,31 +493,31 @@
           "hash": "sha256-+mjsNBKhhxFrNmCCMLPsugzlz/61Glqw8hKoYndy+wc="
         }
       },
-      "cryptn-x509-1.9.1-df6395d8": {
+      "cryptn-x509-1.9.2-d73a8c29": {
         "name": "crypton-x509",
-        "version": "1.9.1",
+        "version": "1.9.2",
         "cabal": {
-          "url": "https://hackage.haskell.org/package/crypton-x509-1.9.1/revision/0.cabal",
-          "hash": "sha256-btYEJL0GZGldtjz9ogUhcr9oQrVg37b0hHhEjG857GU="
+          "url": "https://hackage.haskell.org/package/crypton-x509-1.9.2/revision/0.cabal",
+          "hash": "sha256-RqtSZg4CClPZxgs223HutjIwtb4hI++uwuN/+jpWwGc="
         },
         "src": {
-          "url": "http://hackage.haskell.org/package/crypton-x509/crypton-x509-1.9.1.tar.gz",
-          "hash": "sha256-8VZ64FbEiLj4o+Nm9ZzpNH7ZYs9w6rTkLvT9p2PgBf4="
+          "url": "http://hackage.haskell.org/package/crypton-x509/crypton-x509-1.9.2.tar.gz",
+          "hash": "sha256-b8GjnnVG1N9moeMgGQi6NbnCj22rsiE4F3mCD73R6qo="
         }
       },
-      "cryptn-x509-str-1.9.0-0ae6dec2": {
+      "cryptn-x509-str-1.9.0-b8b89c74": {
         "name": "crypton-x509-store",
         "version": "1.9.0",
         "cabal": {
-          "url": "https://hackage.haskell.org/package/crypton-x509-store-1.9.0/revision/0.cabal",
-          "hash": "sha256-l0YWC5k8JMF15WDicFHf5GFsZBMBRxJ3bxKX4sqLuoo="
+          "url": "https://hackage.haskell.org/package/crypton-x509-store-1.9.0/revision/2.cabal",
+          "hash": "sha256-rTiKmbJdjBFyfZb5+TM0Gqug74y/7h3M88GglWhnTMQ="
         },
         "src": {
           "url": "http://hackage.haskell.org/package/crypton-x509-store/crypton-x509-store-1.9.0.tar.gz",
           "hash": "sha256-GQcCEDOYh9N42GSh/A0pYGuIRqk3zwZ/lpOGxFrnClQ="
         }
       },
-      "cryptn-x509-systm-1.9.0-243608c1": {
+      "cryptn-x509-systm-1.9.0-2dc96f8e": {
         "name": "crypton-x509-system",
         "version": "1.9.0",
         "cabal": {
@@ -529,12 +529,12 @@
           "hash": "sha256-a3rnvpO1xYVFxxIKhp7aObh+oVj49KJqGcv2NuaAgPs="
         }
       },
-      "cryptn-x509-vldtn-1.9.1-f675ae08": {
+      "cryptn-x509-vldtn-1.9.1-03084be4": {
         "name": "crypton-x509-validation",
         "version": "1.9.1",
         "cabal": {
-          "url": "https://hackage.haskell.org/package/crypton-x509-validation-1.9.1/revision/1.cabal",
-          "hash": "sha256-f9EjHgzhO+e7uVo0jaWJGRdNNBVyMJ/0Rx45w7P05oo="
+          "url": "https://hackage.haskell.org/package/crypton-x509-validation-1.9.1/revision/3.cabal",
+          "hash": "sha256-TT0hYXUs3jFPD3C8X0Cv0te/r71yE+R8jhh21ETRzdA="
         },
         "src": {
           "url": "http://hackage.haskell.org/package/crypton-x509-validation/crypton-x509-validation-1.9.1.tar.gz",
@@ -577,7 +577,7 @@
           "hash": "sha256-L18aZKNRAzWlT2QRbwIojCgTaOzzX+4yZMzVqgdpMcs="
         }
       },
-      "dc-0.0.6-868f2af1": {
+      "dc-0.0.6-53183223": {
         "name": "dec",
         "version": "0.0.6",
         "cabal": {
@@ -589,7 +589,7 @@
           "hash": "sha256-DedxeZ8n06P2CUa3dpcwSqfRSgLYZLQ+O1XUstp1bGE="
         }
       },
-      "djnctns-4.4.4-2fca8de9": {
+      "djnctns-4.4.4-3dc8b273": {
         "name": "adjunctions",
         "version": "4.4.4",
         "cabal": {
@@ -613,7 +613,7 @@
           "hash": "sha256-D2gFpv68TRj7z5xCmhi/MWUQ7uyg4zxPgHLRrFGbDNI="
         }
       },
-      "dstrbtv-0.6.3-124ebdce": {
+      "dstrbtv-0.6.3-b87834c5": {
         "name": "distributive",
         "version": "0.6.3",
         "cabal": {
@@ -673,7 +673,7 @@
           "hash": "sha256-KHJ9gZKmykJFhKliPP3Ks1CL9ZJ+25cnAE1RCCmTYk4="
         }
       },
-      "fr-5.2-e5d15c45": {
+      "fr-5.2-51462d27": {
         "name": "free",
         "version": "5.2",
         "cabal": {
@@ -685,19 +685,19 @@
           "hash": "sha256-AcvcPGgeZGnAd6C6DxAjTLEcJVY1fERK5NpzCeA0xCw="
         }
       },
-      "fst-lggr-3.2.7-e4e2cb00": {
+      "fst-lggr-3.2.8-0c692e27": {
         "name": "fast-logger",
-        "version": "3.2.7",
+        "version": "3.2.8",
         "cabal": {
-          "url": "https://hackage.haskell.org/package/fast-logger-3.2.7/revision/0.cabal",
-          "hash": "sha256-PHUuwU/ZRV1GQbvHZSWQ1vd+PSz9pFaJKRTQV1NJ0Ao="
+          "url": "https://hackage.haskell.org/package/fast-logger-3.2.8/revision/0.cabal",
+          "hash": "sha256-0T31jyyzj9yqmIsq9iwMEujKQjLaObLB9bwPWvCUFmU="
         },
         "src": {
-          "url": "http://hackage.haskell.org/package/fast-logger/fast-logger-3.2.7.tar.gz",
-          "hash": "sha256-UGmGyv1omJibJx5linGFnwTxThaGcoY4ylrqSPAtv74="
+          "url": "http://hackage.haskell.org/package/fast-logger/fast-logger-3.2.8.tar.gz",
+          "hash": "sha256-JRuuf+IIhjtxX/FtLUw93DnaiC+u8yQ6n5MJBr4YJwQ="
         }
       },
-      "gnrc-lns-2.3.0.0-cb4e77c9": {
+      "gnrc-lns-2.3.0.0-b5c8a7c7": {
         "name": "generic-lens",
         "version": "2.3.0.0",
         "cabal": {
@@ -737,24 +737,24 @@
         "name": "half",
         "version": "0.3.3",
         "cabal": {
-          "url": "https://hackage.haskell.org/package/half-0.3.3/revision/2.cabal",
-          "hash": "sha256-s5VJt/jNQZrCLZxJ8IN9erwGcM3ff0L0SbEOV23Bwss="
+          "url": "https://hackage.haskell.org/package/half-0.3.3/revision/3.cabal",
+          "hash": "sha256-FnZUE/hMD2OlKMCpP/4o4He7NnLbZ9bbFXh5haW2QUA="
         },
         "src": {
           "url": "http://hackage.haskell.org/package/half/half-0.3.3.tar.gz",
           "hash": "sha256-9wMdnelwXy8+i7VMncQ/sYmf95Y/z6gXEf+YkdLQV7w="
         }
       },
-      "hpk-0.1.0-a7664d0f": {
+      "hpk-0.2.1-a1c96f10": {
         "name": "hpke",
-        "version": "0.1.0",
+        "version": "0.2.1",
         "cabal": {
-          "url": "https://hackage.haskell.org/package/hpke-0.1.0/revision/0.cabal",
-          "hash": "sha256-+xB2cKCuuRtGJuCx3/Tn7DNC5IkxzJlJONla8aI/ZF0="
+          "url": "https://hackage.haskell.org/package/hpke-0.2.1/revision/0.cabal",
+          "hash": "sha256-0iBN03GH5GxEURtlv7Ue0Hl1Ado2cJpC0M1X3JiCidg="
         },
         "src": {
-          "url": "http://hackage.haskell.org/package/hpke/hpke-0.1.0.tar.gz",
-          "hash": "sha256-7bZvdB8unUZxBjrp0CSHn6dIMEJpJ20GrsbRLCT62B0="
+          "url": "http://hackage.haskell.org/package/hpke/hpke-0.2.1.tar.gz",
+          "hash": "sha256-zTZ33VYYve8dD5GrNuFtaUlII7O2+3L80PuCDIFUc4U="
         }
       },
       "hppy-2.2-75c5236d": {
@@ -877,55 +877,55 @@
           "hash": "sha256-nQHqgigAyadMKuEPalJ2gnF4slZkEb9ZBtTM1cf9HBs="
         }
       },
-      "hspc-2.11.17-f6845d23": {
+      "hspc-2.11.18-2365a06c": {
         "name": "hspec",
-        "version": "2.11.17",
+        "version": "2.11.18",
         "cabal": {
-          "url": "https://hackage.haskell.org/package/hspec-2.11.17/revision/0.cabal",
-          "hash": "sha256-tL/OZ5nINYLmS38Hcc6P9fZyU7yXSsKVaHxx8ZLs91Q="
+          "url": "https://hackage.haskell.org/package/hspec-2.11.18/revision/0.cabal",
+          "hash": "sha256-YnD1CWb+9egEwg/KYfE/wO+PSr5LhhyTAM+xp+uGbBo="
         },
         "src": {
-          "url": "http://hackage.haskell.org/package/hspec/hspec-2.11.17.tar.gz",
-          "hash": "sha256-CRT/CDuVF0SECvlZ7N61Gy1sr5qigKnfSrT+vQayP/o="
+          "url": "http://hackage.haskell.org/package/hspec/hspec-2.11.18.tar.gz",
+          "hash": "sha256-I3BUDawMvzBf8qfL/zocB/NMfASn07I450OHJSAu+qg="
         }
       },
-      "hspc-cr-2.11.17-ddcfcde6": {
+      "hspc-cr-2.11.18-55318192": {
         "name": "hspec-core",
-        "version": "2.11.17",
+        "version": "2.11.18",
         "cabal": {
-          "url": "https://hackage.haskell.org/package/hspec-core-2.11.17/revision/0.cabal",
-          "hash": "sha256-jVDq0MRPk6MiMt0/JxNWfaVeiDSYQYgC3wuebf7XQXI="
+          "url": "https://hackage.haskell.org/package/hspec-core-2.11.18/revision/0.cabal",
+          "hash": "sha256-Aw1zy23iOUh8IegG4MxjordUlBVt3hm22pE5ZvS2QUw="
         },
         "src": {
-          "url": "http://hackage.haskell.org/package/hspec-core/hspec-core-2.11.17.tar.gz",
-          "hash": "sha256-2yWsVSQTeKE7800NxRisfe4CwUYaPA6mCxhM9NssUhs="
+          "url": "http://hackage.haskell.org/package/hspec-core/hspec-core-2.11.18.tar.gz",
+          "hash": "sha256-/wQPlsQVstmbOAlC70YaO8UDoQdSbbMKkB0tRPA6n+w="
         }
       },
-      "hspc-dscvr-2.11.17-27b90e4b": {
+      "hspc-dscvr-2.11.18-14169488": {
         "name": "hspec-discover",
-        "version": "2.11.17",
+        "version": "2.11.18",
         "cabal": {
-          "url": "https://hackage.haskell.org/package/hspec-discover-2.11.17/revision/0.cabal",
-          "hash": "sha256-QXIdeqGOvuvlrriCrUOSDMOUV5raZmaVeIYSrM1r3sM="
+          "url": "https://hackage.haskell.org/package/hspec-discover-2.11.18/revision/0.cabal",
+          "hash": "sha256-ETuK/i2AbJ4lXML7Vm9Nwq4OMGB8GsqhGpAGlu+hV80="
         },
         "src": {
-          "url": "http://hackage.haskell.org/package/hspec-discover/hspec-discover-2.11.17.tar.gz",
-          "hash": "sha256-JbTzKSfPwHwAU4Eyjglp9iA6S0Yk2OHqZ24ngBJG0Pk="
+          "url": "http://hackage.haskell.org/package/hspec-discover/hspec-discover-2.11.18.tar.gz",
+          "hash": "sha256-yNBS4/LhD0QFknbPzUpsPirmsduoM4oQ8eJxeZTlOQs="
         }
       },
-      "hspc-dscvr-2.11.17-da4687f3": {
+      "hspc-dscvr-2.11.18-2251362d": {
         "name": "hspec-discover",
-        "version": "2.11.17",
+        "version": "2.11.18",
         "cabal": {
-          "url": "https://hackage.haskell.org/package/hspec-discover-2.11.17/revision/0.cabal",
-          "hash": "sha256-QXIdeqGOvuvlrriCrUOSDMOUV5raZmaVeIYSrM1r3sM="
+          "url": "https://hackage.haskell.org/package/hspec-discover-2.11.18/revision/0.cabal",
+          "hash": "sha256-ETuK/i2AbJ4lXML7Vm9Nwq4OMGB8GsqhGpAGlu+hV80="
         },
         "src": {
-          "url": "http://hackage.haskell.org/package/hspec-discover/hspec-discover-2.11.17.tar.gz",
-          "hash": "sha256-JbTzKSfPwHwAU4Eyjglp9iA6S0Yk2OHqZ24ngBJG0Pk="
+          "url": "http://hackage.haskell.org/package/hspec-discover/hspec-discover-2.11.18.tar.gz",
+          "hash": "sha256-yNBS4/LhD0QFknbPzUpsPirmsduoM4oQ8eJxeZTlOQs="
         }
       },
-      "hspc-w-0.12.1-81967b79": {
+      "hspc-w-0.12.1-68f14d7d": {
         "name": "hspec-wai",
         "version": "0.12.1",
         "cabal": {
@@ -961,7 +961,7 @@
           "hash": "sha256-KY6XuRBqlpGdsxEOs9mbIhkoOobuAEmdSSrMqBh9keE="
         }
       },
-      "http-clnt-tls-0.4.0-9aeebec3": {
+      "http-clnt-tls-0.4.0-3cd030d0": {
         "name": "http-client-tls",
         "version": "0.4.0",
         "cabal": {
@@ -973,7 +973,7 @@
           "hash": "sha256-OvQMk+ewLWN+zMrWc6hphID9DQ32FnasXNeMG/+A/OE="
         }
       },
-      "http-dt-0.0.11-d9606fe1": {
+      "http-dt-0.0.11-22afbfdf": {
         "name": "http-date",
         "version": "0.0.11",
         "cabal": {
@@ -997,7 +997,7 @@
           "hash": "sha256-w6GZh7uvSQCGNPepWG+MNPcX/hGiuAez1C/Fm1eAPYM="
         }
       },
-      "http-p-dt-0.7-f27e0b29": {
+      "http-p-dt-0.7-ec7803ef": {
         "name": "http-api-data",
         "version": "0.7",
         "cabal": {
@@ -1033,19 +1033,19 @@
           "hash": "sha256-bGrVUTZnP1NFVwR0apgNLolKPW3cJdVW4jSBSlV7srg="
         }
       },
-      "http2-5.4.4-8d681892": {
+      "http2-5.4.8-094ef384": {
         "name": "http2",
-        "version": "5.4.4",
+        "version": "5.4.8",
         "cabal": {
-          "url": "https://hackage.haskell.org/package/http2-5.4.4/revision/0.cabal",
-          "hash": "sha256-KhyFQzXW7AWoXaseiWqrbIEjs3hPXHqUxWkYF8f4Ke0="
+          "url": "https://hackage.haskell.org/package/http2-5.4.8/revision/0.cabal",
+          "hash": "sha256-p1wC6yzMs2FgseF9/1gDWN5g4Nd/nSvub4GqYV4lKBs="
         },
         "src": {
-          "url": "http://hackage.haskell.org/package/http2/http2-5.4.4.tar.gz",
-          "hash": "sha256-ftdFX8cWOWKhCKa++vFkVBStW8q/uTVJIUvP55pkLv8="
+          "url": "http://hackage.haskell.org/package/http2/http2-5.4.8.tar.gz",
+          "hash": "sha256-HaeZGnVIVW/NDXaHJwjSbfvsx0zz6va28cMsChx1ydQ="
         }
       },
-      "kn-xtnsns-5.2.8-813a3ac0": {
+      "kn-xtnsns-5.2.8-f424df5a": {
         "name": "kan-extensions",
         "version": "5.2.8",
         "cabal": {
@@ -1093,7 +1093,7 @@
           "hash": "sha256-FT/8OT49r06iz8jIOH2XVrsE5nP17V6ARydb3Jh3ixw="
         }
       },
-      "lns-5.3.6-89b19984": {
+      "lns-5.3.6-c550f677": {
         "name": "lens",
         "version": "5.3.6",
         "cabal": {
@@ -1117,19 +1117,19 @@
           "hash": "sha256-fo1VpBxwSPh0IFmFkkKj2EjMfN0miUax4NEgBb0a9IQ="
         }
       },
-      "mgprsc-9.8.2-0bf97f66": {
+      "mgprsc-9.8.3-74144620": {
         "name": "megaparsec",
-        "version": "9.8.2",
+        "version": "9.8.3",
         "cabal": {
-          "url": "https://hackage.haskell.org/package/megaparsec-9.8.2/revision/0.cabal",
-          "hash": "sha256-RH9OOBynS4VnZu4PxwuvHsrUTF/gw7OmqdoxdQi6lEA="
+          "url": "https://hackage.haskell.org/package/megaparsec-9.8.3/revision/0.cabal",
+          "hash": "sha256-C4VMSbVuD8qp03TTN+I6XBiKZb9H3Jwjj/OeNjdaUN0="
         },
         "src": {
-          "url": "http://hackage.haskell.org/package/megaparsec/megaparsec-9.8.2.tar.gz",
-          "hash": "sha256-QG8FEuUDk/YnlUbIF3Vlk47RSiAqe3mm21q31bmVLUk="
+          "url": "http://hackage.haskell.org/package/megaparsec/megaparsec-9.8.3.tar.gz",
+          "hash": "sha256-2AAqy1pQd9JiXHUegDxdoTVV5uzZiyJXPbtr4CrIy9w="
         }
       },
-      "mlkm-0.2.3.0-02238a1e": {
+      "mlkm-0.2.3.0-f16ed1d8": {
         "name": "mlkem",
         "version": "0.2.3.0",
         "cabal": {
@@ -1189,7 +1189,7 @@
           "hash": "sha256-ev6O8ANtKFAAVN5s21uPyHDQNx6DQh1kAp17BMXYFJQ="
         }
       },
-      "mnd-lggr-0.3.42-d4c64af8": {
+      "mnd-lggr-0.3.42-965d1651": {
         "name": "monad-logger",
         "version": "0.3.42",
         "cabal": {
@@ -1237,7 +1237,7 @@
           "hash": "sha256-iYF44L7kbfr62VnscS2I5avCkR0DTD2tJ+NEt9uMT4w="
         }
       },
-      "ndxd-trvrsbl-nstncs-0.1.2.1-c0a21e5c": {
+      "ndxd-trvrsbl-nstncs-0.1.2.1-282ce36c": {
         "name": "indexed-traversable-instances",
         "version": "0.1.2.1",
         "cabal": {
@@ -1417,7 +1417,7 @@
           "hash": "sha256-ErJEzw0M9p207S4Mff9FLXMUJwys3uXtcQD5+OMeSH4="
         }
       },
-      "nvrnt-0.6.5-e0a234a3": {
+      "nvrnt-0.6.5-e9483473": {
         "name": "invariant",
         "version": "0.6.5",
         "cabal": {
@@ -1465,7 +1465,7 @@
           "hash": "sha256-/h8j63oucdUS6atRCdpa7m3E8uiGIN2q0Z5hZ5FpLrQ="
         }
       },
-      "prfnctrs-5.6.3-1ac7909d": {
+      "prfnctrs-5.6.3-9a64e967": {
         "name": "profunctors",
         "version": "5.6.3",
         "cabal": {
@@ -1513,7 +1513,7 @@
           "hash": "sha256-fDGJvxKtfd+Q/Lenq/HWiErHdN5NtN16j1h+xwNbIJk="
         }
       },
-      "prsstnt-2.18.1.0-b62b925a": {
+      "prsstnt-2.18.1.0-190cad8b": {
         "name": "persistent",
         "version": "2.18.1.0",
         "cabal": {
@@ -1525,7 +1525,7 @@
           "hash": "sha256-1qD996QOKqgoO7OXom+JIbCVUnmoeTavFRBY0MjA/kc="
         }
       },
-      "prsstnt-pstgrsql-2.14.3.0-060d3ad7": {
+      "prsstnt-pstgrsql-2.14.3.0-c08d7313": {
         "name": "persistent-postgresql",
         "version": "2.14.3.0",
         "cabal": {
@@ -1609,7 +1609,7 @@
           "hash": "sha256-uZYEEOOD2ZQJ2upqPqcZRoP0KWaL1b/Z6RyzXkhte/U="
         }
       },
-      "pstgrsql-smpl-0.7.0.1-1d41f65c": {
+      "pstgrsql-smpl-0.7.0.1-857fb843": {
         "name": "postgresql-simple",
         "version": "0.7.0.1",
         "cabal": {
@@ -1621,7 +1621,7 @@
           "hash": "sha256-n3+4ejU03RXLVonbgKknSL9SgW/ZRVwMehYuXH30p7E="
         }
       },
-      "pstgrsql-smpl-ntrvl-1.0.1.2-7b3dd01a": {
+      "pstgrsql-smpl-ntrvl-1.0.1.2-82c7a7e4": {
         "name": "postgresql-simple-interval",
         "version": "1.0.1.2",
         "cabal": {
@@ -1753,7 +1753,7 @@
           "hash": "sha256-M2xVhHMZ7Lqvx/F832mGirHULgzv7TjP/oNkQ4V6YLM="
         }
       },
-      "rplc-mgprsc-1.5.0.1-5177d756": {
+      "rplc-mgprsc-1.5.0.1-a875f889": {
         "name": "replace-megaparsec",
         "version": "1.5.0.1",
         "cabal": {
@@ -1789,16 +1789,16 @@
           "hash": "sha256-s0pfNsufeGQx9XalBUoz1k0DzMTujSH9LsmODwqq1Tk="
         }
       },
-      "scntfc-0.3.8.1-7d970dfd": {
+      "scntfc-0.3.9.0-feb18365": {
         "name": "scientific",
-        "version": "0.3.8.1",
+        "version": "0.3.9.0",
         "cabal": {
-          "url": "https://hackage.haskell.org/package/scientific-0.3.8.1/revision/0.cabal",
-          "hash": "sha256-EbDDvMVy8I3csTv62U34XgMj85kV50yuLXogXGMbTTA="
+          "url": "https://hackage.haskell.org/package/scientific-0.3.9.0/revision/0.cabal",
+          "hash": "sha256-hn09hirPBBzxVA7KTh1pl5fp2LYa3kGoKEyUrYP/VA0="
         },
         "src": {
-          "url": "http://hackage.haskell.org/package/scientific/scientific-0.3.8.1.tar.gz",
-          "hash": "sha256-z47rlT6AUYMGsPutsZtGuci8GGqCvVDmQmfUkF/kq0Y="
+          "url": "http://hackage.haskell.org/package/scientific/scientific-0.3.9.0.tar.gz",
+          "hash": "sha256-u0ynfuTzFwmWCnkneSx81jo1zSkU2Or5gIpC7V5lv1Q="
         }
       },
       "sf-0.3.21-23f8ff59": {
@@ -1825,7 +1825,7 @@
           "hash": "sha256-mheI4IGdapGLwZGC6FlO4C4N5V2CbL/bdzT+Nt4jDaU="
         }
       },
-      "shwr-0.2.0.5-c354e096": {
+      "shwr-0.2.0.5-285fa0df": {
         "name": "shower",
         "version": "0.2.0.5",
         "cabal": {
@@ -1837,7 +1837,7 @@
           "hash": "sha256-ay7PErnv0xh/KA3x/ZdFd6mSGsc7a9JIS63tjgN/J1s="
         }
       },
-      "shwr-0.2.0.5-c52daf2c": {
+      "shwr-0.2.0.5-2f0a5621": {
         "name": "shower",
         "version": "0.2.0.5",
         "cabal": {
@@ -1873,7 +1873,7 @@
           "hash": "sha256-8TIFChA6oka58wSCzWRWuChG8ljpIfvMUUygNW8SiCg="
         }
       },
-      "smgrpds-6.0.2-07610f60": {
+      "smgrpds-6.0.2-e5da36cf": {
         "name": "semigroupoids",
         "version": "6.0.2",
         "cabal": {
@@ -1885,7 +1885,7 @@
           "hash": "sha256-dJjTDs6+zzOV5VCr1z4oJylmzIJq3fEtubbbOE5hglk="
         }
       },
-      "smlgn-1.4-e50cf19c": {
+      "smlgn-1.4-1daabb40": {
         "name": "semialign",
         "version": "1.4",
         "cabal": {
@@ -1909,7 +1909,7 @@
           "hash": "sha256-JLQtHpES3YVWliUIV6ezBp6HpThYKluMp9zOcEzPk18="
         }
       },
-      "sn-2.2.5.1-3c644775": {
+      "sn-2.2.5.1-970661ba": {
         "name": "aeson",
         "version": "2.2.5.1",
         "cabal": {
@@ -1921,7 +1921,7 @@
           "hash": "sha256-f1XeeVxXxoIVqHGNGUlbSL4LpF0jxjPlnC4XUpEf7C4="
         }
       },
-      "sngltn-bl-0.1.8-720ef21e": {
+      "sngltn-bl-0.1.8-feb4c960": {
         "name": "singleton-bool",
         "version": "0.1.8",
         "cabal": {
@@ -1969,7 +1969,7 @@
           "hash": "sha256-6Xh+O3NziT9qWucG1QhLscWgw9Gyzpgm4DOOdOyxrQw="
         }
       },
-      "sqlt-3.6.0.3-4474acfc": {
+      "sqlt-3.6.0.3-3061f130": {
         "name": "esqueleto",
         "version": "3.6.0.3",
         "cabal": {
@@ -1993,7 +1993,7 @@
           "hash": "sha256-mGKQI8+qVyhOiWO8xC2KAzj64oufENsKbtxQYAmkOrg="
         }
       },
-      "srvnt-0.20.3.0-4fd51619": {
+      "srvnt-0.20.3.0-3a15c50f": {
         "name": "servant",
         "version": "0.20.3.0",
         "cabal": {
@@ -2005,7 +2005,7 @@
           "hash": "sha256-cVNjD1tEQnj1pWoFKKtH1vVEZMZUHHsYD9F9hza/920="
         }
       },
-      "srvnt-clnt-0.20.3.0-1f9f8c32": {
+      "srvnt-clnt-0.20.3.0-7d082838": {
         "name": "servant-client",
         "version": "0.20.3.0",
         "cabal": {
@@ -2017,7 +2017,7 @@
           "hash": "sha256-+TNpk66QdZeeM2T74D3DBpnqHVYhOmzRY+NtVkkZjnY="
         }
       },
-      "srvnt-clnt-cr-0.20.3.0-78e42582": {
+      "srvnt-clnt-cr-0.20.3.0-bdd28533": {
         "name": "servant-client-core",
         "version": "0.20.3.0",
         "cabal": {
@@ -2029,7 +2029,7 @@
           "hash": "sha256-iokSQYFaj36GeFMRtWwuv1r4ZIdiyaa2pUz+c7ZWYHs="
         }
       },
-      "srvnt-srvr-0.20.3.0-975f5b2c": {
+      "srvnt-srvr-0.20.3.0-cf58f799": {
         "name": "servant-server",
         "version": "0.20.3.0",
         "cabal": {
@@ -2041,7 +2041,7 @@
           "hash": "sha256-HYWXEesvzAxsSst3VK85H7o1SpfjrNLQDiPOrossbRQ="
         }
       },
-      "srvnt-srvr-0.20.3.0-b1566232": {
+      "srvnt-srvr-0.20.3.0-fd90c4f8": {
         "name": "servant-server",
         "version": "0.20.3.0",
         "cabal": {
@@ -2137,16 +2137,16 @@
           "hash": "sha256-1jcK5ud/LBBGCFyueroqhhbU4SXjirPCM3jq6CK7YZw="
         }
       },
-      "t-pdt-0.2.7-ee0e3224": {
+      "t-pdt-0.2.8-4905902a": {
         "name": "auto-update",
-        "version": "0.2.7",
+        "version": "0.2.8",
         "cabal": {
-          "url": "https://hackage.haskell.org/package/auto-update-0.2.7/revision/0.cabal",
-          "hash": "sha256-Msps41FgShfueeQIaTn3mPlY+EB0eCiOmtt63rGUxuo="
+          "url": "https://hackage.haskell.org/package/auto-update-0.2.8/revision/0.cabal",
+          "hash": "sha256-YFeTv8oKStb5POt94wLlOXIDUaY4DC7fRwF/7iE7KsI="
         },
         "src": {
-          "url": "http://hackage.haskell.org/package/auto-update/auto-update-0.2.7.tar.gz",
-          "hash": "sha256-fHX/OqF/cB9rbpGpLUtA29bcEJS43HUWHcK55yUxKoo="
+          "url": "http://hackage.haskell.org/package/auto-update/auto-update-0.2.8.tar.gz",
+          "hash": "sha256-2Q43lwSV2weMu7KXBPVOy0aoTCiqsHZY4T6AeJgmWEM="
         }
       },
       "tf8-strng-1.0.2-f26ccf15": {
@@ -2161,16 +2161,16 @@
           "hash": "sha256-MH91BrEXMZzxFpe1+iCyHIFIRxVCvDootpEV0mU7KCY="
         }
       },
-      "tggd-0.8.10-fd7d5d7b": {
+      "tggd-0.8.11-207a4a67": {
         "name": "tagged",
-        "version": "0.8.10",
+        "version": "0.8.11",
         "cabal": {
-          "url": "https://hackage.haskell.org/package/tagged-0.8.10/revision/1.cabal",
-          "hash": "sha256-6bl8mOmCeYHWLzfF/r+ea7tnrOySuL1B/Z96zl6zHTI="
+          "url": "https://hackage.haskell.org/package/tagged-0.8.11/revision/0.cabal",
+          "hash": "sha256-KtqNLMM9zE7V4uvx/Ccnk7BKmEDZXkTPVW8kjAo6iUw="
         },
         "src": {
-          "url": "http://hackage.haskell.org/package/tagged/tagged-0.8.10.tar.gz",
-          "hash": "sha256-PqVvvs5oh9qVXzUcUUK2kX18qnRbe2yquC2zw/+GZ7k="
+          "url": "http://hackage.haskell.org/package/tagged/tagged-0.8.11.tar.gz",
+          "hash": "sha256-WDAzwIhgMIOdcPWaZuvEMTMTrrPOt1jXUGxkkGYOvEg="
         }
       },
       "th-bstrctn-0.7.2.0-348c2f87": {
@@ -2233,16 +2233,16 @@
           "hash": "sha256-84h3fyot14FILSQhfArP32qruJ4QakScm5s55iuFDEs="
         }
       },
-      "tls-2.4.3-8c3ff7f3": {
+      "tls-2.4.9-7cd5e373": {
         "name": "tls",
-        "version": "2.4.3",
+        "version": "2.4.9",
         "cabal": {
-          "url": "https://hackage.haskell.org/package/tls-2.4.3/revision/0.cabal",
-          "hash": "sha256-tputTJgEY76+IW47H4hEOITa/xmHji/sRWYTWKvb5ug="
+          "url": "https://hackage.haskell.org/package/tls-2.4.9/revision/0.cabal",
+          "hash": "sha256-8h6yIWv/hgxm1kdGXedgp9RhsaegugX+Q3649v7j49w="
         },
         "src": {
-          "url": "http://hackage.haskell.org/package/tls/tls-2.4.3.tar.gz",
-          "hash": "sha256-FWJNi6lk3gPl3eZ8kDZgCqMjvkfa5qBByUffSGt+92U="
+          "url": "http://hackage.haskell.org/package/tls/tls-2.4.9.tar.gz",
+          "hash": "sha256-e6Bitfc+xy5XDGpq/+LkgZ3cIC1doVKsJjkujbtIGE8="
         }
       },
       "tm-cmpt-1.9.9-7336d70e": {
@@ -2317,16 +2317,28 @@
           "hash": "sha256-Y18vN1o5Q3/XnWbVa3XxYOpqeHOTXfa3u7Gsx+vesYc="
         }
       },
-      "tsty-1.5.4-3e4c17b0": {
+      "tsty-1.5.4-a339e202": {
         "name": "tasty",
         "version": "1.5.4",
         "cabal": {
-          "url": "https://hackage.haskell.org/package/tasty-1.5.4/revision/0.cabal",
-          "hash": "sha256-SfgwfXjH1rGVnURIFShY7+ECyl6bKJvggrm/Ih55gIQ="
+          "url": "https://hackage.haskell.org/package/tasty-1.5.4/revision/1.cabal",
+          "hash": "sha256-IGXvOOBhVRx+Opl8Sk6sG2jb8FU8xhd/Acj3mC9M03U="
         },
         "src": {
           "url": "http://hackage.haskell.org/package/tasty/tasty-1.5.4.tar.gz",
           "hash": "sha256-C6VyZuM+rcqllVlhk52snAKpw3sqrrzncz8Da1yE03Q="
+        }
+      },
+      "ttprsc-0.14.4-1b3ca989": {
+        "name": "attoparsec",
+        "version": "0.14.4",
+        "cabal": {
+          "url": "https://hackage.haskell.org/package/attoparsec-0.14.4/revision/6.cabal",
+          "hash": "sha256-NRKdCrF0HwAPGn0vyDlUSRnub7uPLW5/CmKcQfkQNfM="
+        },
+        "src": {
+          "url": "http://hackage.haskell.org/package/attoparsec/attoparsec-0.14.4.tar.gz",
+          "hash": "sha256-iA1FzjPMKmASCSpLKiool8kFCsTm183cCnn7rgq8LXk="
         }
       },
       "ttprsc-0.14.4-89d4147a": {
@@ -2341,19 +2353,7 @@
           "hash": "sha256-iA1FzjPMKmASCSpLKiool8kFCsTm183cCnn7rgq8LXk="
         }
       },
-      "ttprsc-0.14.4-d4baab03": {
-        "name": "attoparsec",
-        "version": "0.14.4",
-        "cabal": {
-          "url": "https://hackage.haskell.org/package/attoparsec-0.14.4/revision/6.cabal",
-          "hash": "sha256-NRKdCrF0HwAPGn0vyDlUSRnub7uPLW5/CmKcQfkQNfM="
-        },
-        "src": {
-          "url": "http://hackage.haskell.org/package/attoparsec/attoparsec-0.14.4.tar.gz",
-          "hash": "sha256-iA1FzjPMKmASCSpLKiool8kFCsTm183cCnn7rgq8LXk="
-        }
-      },
-      "ttprsc-sn-2.2.2.0-3e25fc25": {
+      "ttprsc-sn-2.2.2.0-6bcb1628": {
         "name": "attoparsec-aeson",
         "version": "2.2.2.0",
         "cabal": {
@@ -2413,7 +2413,7 @@
           "hash": "sha256-nUS1LHIOkLcsJkli7WOcOAY1tnG6t6mL1By/Bmc87FU="
         }
       },
-      "vctr-0.13.2.0-a0e4eb02": {
+      "vctr-0.13.2.0-9da3e549": {
         "name": "vector",
         "version": "0.13.2.0",
         "cabal": {
@@ -2485,7 +2485,7 @@
           "hash": "sha256-Pmj0T7nVWbeJC2owVdM5gGUMSocVd2D0/lCKIy85Xp0="
         }
       },
-      "w-lggr-2.5.0-dd84a114": {
+      "w-lggr-2.5.0-ce3cfaad": {
         "name": "wai-logger",
         "version": "2.5.0",
         "cabal": {
@@ -2497,7 +2497,7 @@
           "hash": "sha256-d7iq3rxKSLECOdTvQcNQibwXPi87C69wCzpPvv7VD9A="
         }
       },
-      "w-pp-sttc-3.2.1-bd3da501": {
+      "w-pp-sttc-3.2.1-035ac4b2": {
         "name": "wai-app-static",
         "version": "3.2.1",
         "cabal": {
@@ -2509,7 +2509,7 @@
           "hash": "sha256-HQP76brA2MwBVipRs2ZstY59nUMhzfJkw90Kaep2o9I="
         }
       },
-      "w-pp-sttc-3.2.1-ca2dca53": {
+      "w-pp-sttc-3.2.1-e01651c8": {
         "name": "wai-app-static",
         "version": "3.2.1",
         "cabal": {
@@ -2521,7 +2521,7 @@
           "hash": "sha256-HQP76brA2MwBVipRs2ZstY59nUMhzfJkw90Kaep2o9I="
         }
       },
-      "w-xtr-3.1.18-14f407c5": {
+      "w-xtr-3.1.18-67796457": {
         "name": "wai-extra",
         "version": "3.1.18",
         "cabal": {
@@ -2545,19 +2545,19 @@
           "hash": "sha256-3yoQ2wftLc8q2guJK9U+zl2SQJm7ugm+hNe+Lh2EcYw="
         }
       },
-      "wrp-3.4.15-0dafd138": {
+      "wrp-3.4.16-1ba6181e": {
         "name": "warp",
-        "version": "3.4.15",
+        "version": "3.4.16",
         "cabal": {
-          "url": "https://hackage.haskell.org/package/warp-3.4.15/revision/0.cabal",
-          "hash": "sha256-A8/ZlxQUCe3ZF01IHVDXyToE14oaOzx3woa2B/MHR0Q="
+          "url": "https://hackage.haskell.org/package/warp-3.4.16/revision/0.cabal",
+          "hash": "sha256-8BhIGXLU/kExEF6IEpxRB2+6TJh7eua6EFrvroMw6K0="
         },
         "src": {
-          "url": "http://hackage.haskell.org/package/warp/warp-3.4.15.tar.gz",
-          "hash": "sha256-0xB1FnOmHpY5tz68twFs684HYKtiyb+sbjLZBER0VUA="
+          "url": "http://hackage.haskell.org/package/warp/warp-3.4.16.tar.gz",
+          "hash": "sha256-7RJ4GMwqSDszM/t6yadW6mQIAIMARX/khD0lf+UWVg8="
         }
       },
-      "wthrbl-0.5-a2184cc8": {
+      "wthrbl-0.5-3ea454f2": {
         "name": "witherable",
         "version": "0.5",
         "cabal": {
@@ -2573,8 +2573,8 @@
         "name": "zlib",
         "version": "0.7.1.1",
         "cabal": {
-          "url": "https://hackage.haskell.org/package/zlib-0.7.1.1/revision/0.cabal",
-          "hash": "sha256-zy+PkbELY1vaosMBD0ClVioG7eJLktgZdY5/G30E+fI="
+          "url": "https://hackage.haskell.org/package/zlib-0.7.1.1/revision/1.cabal",
+          "hash": "sha256-Vti7P5ZWBZ/yS3BdWcxl9vN+Pqkra19bsgK9YHc4u28="
         },
         "src": {
           "url": "http://hackage.haskell.org/package/zlib/zlib-0.7.1.1.tar.gz",
@@ -2583,19 +2583,19 @@
       }
     },
     "git": {
-      "frgj-0.1.0.0-eeb374ba": {
+      "frgj-0.1.0.0-f114135b": {
         "name": "forgejo",
         "version": "0.1.0.0",
         "cabal": {
-          "url": "https://raw.githubusercontent.com/uzinfocom-org/forgejo/89209589c5b277848d9f41a5131926e545db2e6b/forgejo.cabal",
-          "hash": "sha256-pSL95kzKwCHNbCK9yaVIC9K+W06zueXTbwhMZ+h4Kf0="
+          "url": "https://raw.githubusercontent.com/uzinfocom-org/forgejo/0156d80cdff69866df8e68a025a5d64450532b24/forgejo.cabal",
+          "hash": "sha256-I3jZwmzZty/FTRJlYYIK8HgYj90/Oip+oEH+y5Lx/Fk="
         },
         "src": {
-          "url": "https://github.com/uzinfocom-org/forgejo/archive/89209589c5b277848d9f41a5131926e545db2e6b.tar.gz",
-          "hash": "sha256-hmvAnZGF61f5wUMfK0zKCdi65RCVRS5i4RrQYFBmGWo="
+          "url": "https://github.com/uzinfocom-org/forgejo/archive/0156d80cdff69866df8e68a025a5d64450532b24.tar.gz",
+          "hash": "sha256-wi1teN//eI7fhJZU+BcSZ4s3gaWiUhZbSSEMOkWtxks="
         }
       },
-      "prsstnt-rcrds-0.1.0.0-f1ad04ea": {
+      "prsstnt-rcrds-0.1.0.0-5627e6ed": {
         "name": "persistent-records",
         "version": "0.1.0.0",
         "cabal": {

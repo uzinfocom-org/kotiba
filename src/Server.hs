@@ -4,13 +4,17 @@ module Server (run) where
 
 import API
 import Config
+import Control.Concurrent (forkIO)
+import Control.Concurrent.STM (newTQueueIO)
 import Control.Exception (SomeException, catch)
+import Control.Monad.Except (runExceptT)
 import Control.Monad.Logger (runStdoutLoggingT)
 import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.IO qualified as TIO
 import Database.Persist.Postgresql (createPostgresqlPool)
-import Database.Seed (seedIfChanged)
+import Database.Seed (seedErrorMessage, seedIfChanged, syncBots)
+import Events.Tracking.Worker (worker)
 import Forgejo.App (mkAppEnv)
 import Kotiba.Prelude
 import Network.HTTP.Client.TLS (newTlsManager)
@@ -56,12 +60,21 @@ run = do
       manager <- newTlsManager
       baseUrl <- parseBaseUrl $ T.unpack c.forgejoUrl
       fgToken <- T.strip <$> liftIO (TIO.readFile $ T.unpack c.forgejoToken)
+      queue <- newTQueueIO
       let cenv = mkClientEnv manager baseUrl
           fc = c{forgejoToken = fgToken}
-          st = MkAppSt{config = fc, db = pool, forgejo = mkAppEnv cenv ("token " <> fgToken)}
+          st = MkAppSt{config = fc, db = pool, forgejo = mkAppEnv cenv ("token " <> fgToken), trackQueue = queue}
           settings = setPort c.port $ setHost "*" defaultSettings
       migrate' st
-      seedIfChanged st c.seedFile
       let ?st = st
+
+      sResult <-
+        runExceptT $ do
+          seedIfChanged st c.seedFile
+          syncBots c.bots
+
+      either (putStrLn . seedErrorMessage) pure sResult
+
+      _ <- forkIO worker
       runSettings settings (catchExceptions runApi)
     Failure _ -> putStrLn "Failed to load config"

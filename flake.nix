@@ -105,6 +105,7 @@
               brick = hlib.dontCheck (hlib.doJailbreak super.brick);
             };
           };
+          treefmtPackage = treefmtEval.${pkgs.system}.config.build.wrapper;
         in {
           default = pkgs.mkShell {
             nativeBuildInputs = [
@@ -128,7 +129,7 @@
               pkgs.nixd
               pkgs.statix
               pkgs.deadnix
-              pkgs.treefmt
+              treefmtPackage
               pkgs.nixfmt
 
               pkgs.jq

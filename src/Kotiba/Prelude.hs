@@ -12,6 +12,11 @@ module Kotiba.Prelude
   , FromJSON
   -- 3rd party tools
   , printer
+
+    -- * Lifting operators
+  , (!?)
+  , (<??>)
+  , (!??)
   , (<!!>)
 
     -- * Application
@@ -27,6 +32,7 @@ module Kotiba.Prelude
   ) where
 
 import Config (Config (..))
+import Control.Concurrent.STM (TQueue)
 import Control.Monad.Error.Class (MonadError (..))
 import Control.Monad.IO.Class (MonadIO (..))
 import Control.Monad.Reader (MonadReader, ReaderT (..), asks, runReaderT)
@@ -35,6 +41,7 @@ import Data.Kind (Constraint, Type)
 import Data.Text (Text)
 import Database.Persist.Sql (SqlPersistT, runMigration, runSqlPool)
 import Database.Types
+import Events.Tracking.Job (TrackJob)
 import Forgejo.App (AppEnv, AppM, runAppM, runForgejo)
 import Forgejo.Error (ForgejoError (..))
 import GHC.Generics (Generic)
@@ -45,6 +52,7 @@ data AppSt = MkAppSt
   { config :: Config
   , db :: PoolSql
   , forgejo :: AppEnv
+  , trackQueue :: TQueue TrackJob
   }
 
 type AppState :: Constraint
@@ -63,6 +71,21 @@ withPool q = do
 
 migrate' :: AppSt -> IO ()
 migrate' st = flip runReaderT st $ withPool (runMigration migrateAll)
+
+infixl 0 !?
+
+(!?) :: (MonadError e m) => m (Maybe a) -> e -> m a
+action !? err = action >>= maybe (throwError err) pure
+
+infixl 0 <??>
+
+(<??>) :: (MonadError e m) => m (Either err a) -> (err -> e) -> m a
+action <??> f = action >>= either (throwError . f) pure
+
+infixl 0 !??
+
+(!??) :: (MonadError e m, MonadIO m) => IO (Maybe a) -> e -> m a
+action !?? err = liftIO action >>= maybe (throwError err) pure
 
 infixl 0 <!!>
 
