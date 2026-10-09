@@ -175,6 +175,7 @@ let
     identityName = cfg.identityName;
     identityEmail = cfg.identityEmail;
     seedFile = "${cfg.dataDir}/seed.json";
+    bots = cfg.bots;
   };
 
   asserts = lib.mkIf cfg.enable {
@@ -358,6 +359,32 @@ in {
         default = package;
         description = ''
           Compiled kotiba package to use with the service.
+        '';
+      };
+
+      bots = mkOption {
+        type = with types;
+          listOf (submodule {
+            options = {
+              login = mkOption {
+                type = types.str;
+                example = "support";
+                description = "Login name for the bot.";
+              };
+              frId = mkOption {
+                type = types.int;
+                example = 8;
+                description = "Forgejo ID associated with the bot.";
+              };
+            };
+          });
+        default = [ ];
+        example = [{
+          login = "support";
+          frId = 8;
+        }];
+        description = ''
+          List of bot configurations to generate [[bots]] arrays in TOML.
         '';
       };
     };

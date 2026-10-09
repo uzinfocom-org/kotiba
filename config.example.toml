@@ -6,3 +6,7 @@ forgejoUrl = "git.oss.uzinfocom.uz"
 forgejoToken = "/path/secret"
 identityName = "John Doe"
 identityEmail = "johndoe@gmail.com"
+
+[[bots]]
+login = "support"
+frId = 8
