@@ -72,9 +72,16 @@
               ({ ... }: {
                 services.kotiba = {
                   enable = true;
+                  bots = [{
+                    login = "support";
+                    frId = 8;
+                  }];
+
                   createDatabaseLocally = true;
-                  forgejoToken =
-                    "write your access token (dont forget delete it before pushing)";
+                  forgejoToken = "${pkgs.writeText "token" ''
+                    fake-token-for-testing
+                  ''}";
+
                   forgejoUrl = "git.oss.uzinfocom.uz";
                   identityName = "John Doe";
                   identityEmail = "johndoe@mail.com";
