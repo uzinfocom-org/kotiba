@@ -61,9 +61,16 @@ run = do
       baseUrl <- parseBaseUrl $ T.unpack c.forgejoUrl
       fgToken <- T.strip <$> liftIO (TIO.readFile $ T.unpack c.forgejoToken)
       queue <- newTQueueIO
+      webhookSec <- T.strip <$> liftIO (TIO.readFile $ T.unpack c.webhookSecret)
       let cenv = mkClientEnv manager baseUrl
           fc = c{forgejoToken = fgToken}
-          st = MkAppSt{config = fc, db = pool, forgejo = mkAppEnv cenv ("token " <> fgToken), trackQueue = queue}
+          st = MkAppSt
+            { config = fc
+            , db = pool
+            , forgejo = mkAppEnv cenv ("token " <> fgToken)
+            , trackQueue = queue
+            , whSecret = encodeUtf8 webhookSec
+            }
           settings = setPort c.port $ setHost "*" defaultSettings
       migrate' st
       let ?st = st

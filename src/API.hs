@@ -76,8 +76,10 @@ apiHandlers =
   MkAPI
     { health = heal
     , dev = devHandlers
-    , webhook = webhookHandlerWith handleWebhook
+    , webhook = webhookHandlerWith secret handleWebhook
     }
+ where
+  secret = ?st.whSecret
 
 heal :: (AppState) => Handler Integer
 heal = do
