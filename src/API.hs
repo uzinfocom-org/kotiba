@@ -76,7 +76,7 @@ apiHandlers =
   MkAPI
     { health = heal
     , dev = devHandlers
-    , webhook = webhookHandlerWith secret handleWebhook
+    , webhook = webhookHandlerWith handleWebhook secret
     }
  where
   secret = ?st.whSecret

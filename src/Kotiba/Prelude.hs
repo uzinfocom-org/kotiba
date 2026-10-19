@@ -54,7 +54,7 @@ data AppSt = MkAppSt
   , db :: PoolSql
   , forgejo :: AppEnv
   , trackQueue :: TQueue TrackJob
-  , whSecret :: ByteString
+  , whSecret :: Maybe ByteString
   }
 
 type AppState :: Constraint

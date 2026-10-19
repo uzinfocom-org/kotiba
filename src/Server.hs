@@ -46,6 +46,20 @@ catchExceptions app req res =
         [(hContentType, "application/json")]
         mempty
 
+readNonEmptyFile :: FilePath -> IO T.Text
+readNonEmptyFile path = do
+  content <- TIO.readFile path
+  let cleaned = T.strip content
+  if T.null cleaned then
+    fail $ "Error: Required configuration file '" <> path <> "' is empty."
+  else
+    pure cleaned
+
+readOptionalFile :: FilePath -> IO T.Text
+readOptionalFile path = do
+  content <- TIO.readFile path `catch` \(_ :: SomeException) -> pure ""
+  pure $ T.strip content
+
 run :: IO ()
 run = do
   hSetBuffering stdout LineBuffering
@@ -59,18 +73,22 @@ run = do
       pool <- runStdoutLoggingT $ createPostgresqlPool (encodeUtf8 c.database) c.databasePoolSize
       manager <- newTlsManager
       baseUrl <- parseBaseUrl $ T.unpack c.forgejoUrl
-      fgToken <- T.strip <$> liftIO (TIO.readFile $ T.unpack c.forgejoToken)
+
+      fgToken <- readNonEmptyFile $ T.unpack c.forgejoToken
+      webhookSec <- readOptionalFile $ T.unpack c.webhookSecret
+
       queue <- newTQueueIO
-      webhookSec <- T.strip <$> liftIO (TIO.readFile $ T.unpack c.webhookSecret)
       let cenv = mkClientEnv manager baseUrl
           fc = c{forgejoToken = fgToken}
-          st = MkAppSt
-            { config = fc
-            , db = pool
-            , forgejo = mkAppEnv cenv ("token " <> fgToken)
-            , trackQueue = queue
-            , whSecret = encodeUtf8 webhookSec
-            }
+          st =
+            MkAppSt
+              { config = fc
+              , db = pool
+              , forgejo = mkAppEnv cenv ("token " <> fgToken)
+              , trackQueue = queue
+              , whSecret = Nothing
+              -- , whSecret = encodeUtf8 webhookSec
+              }
           settings = setPort c.port $ setHost "*" defaultSettings
       migrate' st
       let ?st = st
