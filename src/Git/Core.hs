@@ -1,6 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE TypeOperators #-}
@@ -81,7 +80,7 @@ Usage: requireGit (type Push) path args
 -}
 requireGit
   :: forall op
-    ->(GitMonad m, GitOperation op)
+  ->(GitMonad m, GitOperation op)
   => FilePath
   -> [String]
   -> m BL.ByteString
@@ -128,15 +127,15 @@ ensureClone (Arg dataDir) (Arg owner) (Arg repo) (Arg cloneUrl) (Arg token) = do
   let path = repoPath dataDir owner repo
       headerArgs = authHeaderArgs token
   exists <- liftIO $ doesDirectoryExist path
-  if exists
-    then void $ requireGit (type Fetch) path ["fetch", "origin"]
-    else do
-      liftIO $ createDirectoryIfMissing True $ takeDirectory path
-      void
-        $ requireGit
-          (type Clone)
-          (takeDirectory path)
-          (headerArgs <> ["clone", T.unpack cloneUrl, path])
+  if exists then
+    void $ requireGit (type Fetch) path ["fetch", "origin"]
+  else do
+    liftIO $ createDirectoryIfMissing True $ takeDirectory path
+    void
+      $ requireGit
+        (type Clone)
+        (takeDirectory path)
+        (headerArgs <> ["clone", T.unpack cloneUrl, path])
   pure path
 
 {- | Number of parents of a commit. 1 = normal commit, 2+ = merge commit.

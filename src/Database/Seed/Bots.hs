@@ -32,7 +32,7 @@ upsertBot roleKey b = do
         }
 
 -- | Synchronize a list of system bot accounts against the "bot" role.
-syncBots :: (AppState, MonadIO m, MonadError SeedError m) => [BotAccount] -> m ()
+syncBots :: (AppState, MonadError SeedError m, MonadIO m) => [BotAccount] -> m ()
 syncBots [] = pure ()
 syncBots accounts = do
   Entity roleKey _ <- getBy (type (Entity Role)) (UniqueRoleName "bot") !? SeedBotRoleMissing

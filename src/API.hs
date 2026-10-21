@@ -63,7 +63,7 @@ onPush _ = pure ()
 onActionRun :: (AppState) => ActionRunPayload -> Handler ()
 onActionRun _ = pure ()
 
-data ApiServer route = MkApiServer
+newtype ApiServer route = MkApiServer
   { api :: route :- NamedRoutes API
   }
   deriving (Generic)
@@ -94,4 +94,4 @@ runApi =
   serveWithContext
     (Proxy @(ToServantApi ApiServer))
     errorFormatters
-    (toServant $ mkServer)
+    (toServant mkServer)

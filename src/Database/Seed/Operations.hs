@@ -18,7 +18,7 @@ lookupRef
 lookupRef owner entity key selector =
   gets (Map.lookup key . selector)
     !? SeedMissingReference
-      { entity = (entity <> " " <> show key)
+      { entity = entity <> " " <> show key
       , name = owner
       }
 

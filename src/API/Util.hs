@@ -15,7 +15,7 @@ import Servant
 ----------------------- Error formatting ------------------
 
 errorFormatters :: Context '[ErrorFormatters]
-errorFormatters = (customFormatters :. EmptyContext)
+errorFormatters = customFormatters :. EmptyContext
 
 customFormatters :: ErrorFormatters
 customFormatters =
@@ -25,17 +25,9 @@ customFormatters =
     }
 
 bodyParserErrorFormatter' :: ErrorFormatter
-bodyParserErrorFormatter' _ _ errMsg =
-  ServerError
-    { errHTTPCode = HTTP.statusCode HTTP.status400
-    , -- , errReasonPhrase = UTF8.toString $ HTTP.statusMessage HTTP.status400
-      -- , errBody =
-      --     AS.encode $
-      --       AS.object
-      --         [ "code" AS..= AS.Number 400
-      --         , "message" AS..= errMsg -- FIXME: need implement error scope for example: { ... "scope": "ReqBody"}
-      --         ]
-      errHeaders = [(HTTP.hContentType, HTTPMedia.renderHeader (Servant.contentType (Proxy @Servant.JSON)))]
+bodyParserErrorFormatter' _ _ _errMsg =
+  err400
+    { errHeaders = [(HTTP.hContentType, HTTPMedia.renderHeader (contentType (Proxy @JSON)))]
     }
 
 ----------------------- Throwing api errors ------------------
@@ -63,11 +55,11 @@ throwUVerb = UVerbT . ExceptT . fmap Left . respond
 -------------------------- Prelude for http responses --------------------------
 
 type ResponseError :: Type -> Type
-data ResponseError a = MKResponseError {error :: a}
+newtype ResponseError a = MKResponseError {error :: a}
   deriving (Eq, Generic, Show)
 
 type BadRequest :: Type
-data BadRequest = MkBadRequest {message :: Text}
+newtype BadRequest = MkBadRequest {message :: Text}
   deriving (Eq, Generic, Show)
 
 deriving anyclass instance ToJSON BadRequest

@@ -56,7 +56,7 @@ seedRepository SeedRepository{..} = do
   insertMap pName k (.repoMap) (\m s -> s{repoMap = m})
 
 -- | Upsert a repository contributor association requiring resolved repo, user, and role IDs.
-seedContributor :: (AppState, MonadIO m, MonadError SeedError m) => SeedContributor -> SeedM m ()
+seedContributor :: (AppState, MonadError SeedError m, MonadIO m) => SeedContributor -> SeedM m ()
 seedContributor SeedContributor{..} = do
   repoId <- lookupRef cUser "repository" cRepo (.repoMap)
   userId <- lookupRef cRepo "user" cUser (.userMap)
