@@ -40,6 +40,7 @@ library
     Git.Core
     Git.PullRequest
     Kotiba.Prelude
+    Kotiba.Webhook
     Server
 
   build-depends:
@@ -49,6 +50,7 @@ library
     , conduit
     , conduit-combinators
     , containers
+    , crypton
     , directory
     , esqueleto
     , filepath
@@ -59,6 +61,7 @@ library
     , http-media
     , http-types
     , lens
+    , memory
     , monad-logger
     , mtl
     , named

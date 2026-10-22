@@ -9,6 +9,7 @@ import Control.Concurrent.STM (newTQueueIO)
 import Control.Exception (SomeException, catch)
 import Control.Monad.Except (runExceptT)
 import Control.Monad.Logger (runStdoutLoggingT)
+import Data.ByteString (ByteString)
 import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.IO qualified as TIO
@@ -55,10 +56,12 @@ readNonEmptyFile path = do
   else
     pure cleaned
 
-readOptionalFile :: FilePath -> IO T.Text
-readOptionalFile path = do
-  content <- TIO.readFile path `catch` \(_ :: SomeException) -> pure ""
-  pure $ T.strip content
+readOptionalSecret :: FilePath -> IO (Maybe ByteString)
+readOptionalSecret path = do
+  content <- T.strip <$> TIO.readFile path
+  if T.null content
+    then Nothing <$ putStrLn "WARNING: webhook secret is empty, signatures are NOT verified"
+    else pure . Just $ encodeUtf8 content
 
 run :: IO ()
 run = do
@@ -75,7 +78,10 @@ run = do
       baseUrl <- parseBaseUrl $ T.unpack c.forgejoUrl
 
       fgToken <- readNonEmptyFile $ T.unpack c.forgejoToken
-      webhookSec <- readOptionalFile $ T.unpack c.webhookSecret
+      webhookSec <-
+        if T.null c.webhookSecret
+          then pure Nothing
+          else readOptionalSecret (T.unpack c.webhookSecret)
 
       queue <- newTQueueIO
       let cenv = mkClientEnv manager baseUrl
@@ -86,8 +92,8 @@ run = do
               , db = pool
               , forgejo = mkAppEnv cenv ("token " <> fgToken)
               , trackQueue = queue
-              , whSecret = Nothing
-              -- , whSecret = encodeUtf8 webhookSec
+              -- , whSecret = Nothing
+              , whSecret = webhookSec
               }
           settings = setPort c.port $ setHost "*" defaultSettings
       migrate' st
