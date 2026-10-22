@@ -3,7 +3,7 @@
 
 module Kotiba.Webhook where
 
-import Control.Monad (unless)
+import Control.Monad (unless, when)
 import Control.Monad.IO.Class (liftIO)
 import Crypto.Hash (Digest, SHA256, digestFromByteString)
 import Crypto.MAC.HMAC (HMAC (..), hmac)
@@ -13,7 +13,7 @@ import Data.ByteString qualified as BS
 import Data.ByteString.Lazy qualified as BSL
 import Data.ByteString.Lazy.Char8 qualified as BSLC
 import Data.Foldable (for_)
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, isJust, isNothing)
 import Network.Wai (requestHeaders, strictRequestBody)
 import Servant
 import Servant.Server.Internal.Delayed (addBodyCheck)
@@ -26,7 +26,7 @@ data SignedBody a
 newtype WebhookSecret = WebhookSecret (Maybe BS.ByteString)
 
 instance
-  (FromJSON a, HasServer api ctx, HasContextEntry ctx WebhookSecret)
+  (FromJSON a, HasContextEntry ctx WebhookSecret, HasServer api ctx)
   => HasServer (SignedBody a :> api) ctx
   where
   -- handler takes the decoded body, then the rest
@@ -35,22 +35,27 @@ instance
   hoistServerWithContext _ pc nt s = hoistServerWithContext (Proxy @api) pc nt . s
 
   -- runs once on startup, only builds the recipe
-  route _ ctx sub = route (Proxy @api) ctx (addBodyCheck sub (pure ()) check)
+  route _ ctx sub = route (Proxy @api) ctx (addBodyCheck sub getSig check)
    where
     WebhookSecret msecret = getContextEntry ctx
 
+    sigInvalid = err401{errBody = "Invalid X-Forgejo-Signature"}
+
+    getSig :: DelayedIO (Maybe BS.ByteString)
+    getSig = withRequest $ \req -> do
+      let sig = lookup "x-forgejo-signature" (requestHeaders req)
+      when (isJust msecret && isNothing sig) $ delayedFailFatal sigInvalid
+      pure sig
+
     -- runs on every request, in body stage
-    check :: () -> DelayedIO a
-    check () = withRequest $ \req -> do
+    check :: Maybe BS.ByteString -> DelayedIO a
+    check sig = withRequest $ \req -> do
       -- body can be read only once and HMAC needs exact bytes, so keep raw
       raw <- liftIO $ strictRequestBody req
-      let headers = requestHeaders req
-      let sig = lookup "x-forgejo-signature" headers
-          sigInvalid = err401{errBody = "Invalid X-Forgejo-Signature"}
 
       for_ msecret $ \secret ->
-        unless (validSignature secret sig raw) $
-          delayedFailFatal sigInvalid
+        unless (validSignature secret sig raw)
+          $ delayedFailFatal sigInvalid
 
       -- parse only after signature is fine
       either (\e -> delayedFailFatal err400{errBody = BSLC.pack e}) pure $ eitherDecode raw
