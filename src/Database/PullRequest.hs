@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 
 -- | Database operations related to pull requests.
@@ -7,7 +6,7 @@ module Database.PullRequest where
 import Control.Monad (forM_)
 import Data.Time (UTCTime, getCurrentTime)
 import Database (deleteWhere, existsWhere, getBy, updateById, updateWhere, upsertBy)
-import Database.Persist (Entity (..), (!=.), (=.), (/<-.), (==.))
+import Database.Persist (Entity (..), (!=.), (/<-.), (=.), (==.))
 import Database.Types
 import Kotiba.Prelude
 

@@ -4,7 +4,7 @@ let
   inherit (lib) mkEnableOption mkOption mkIf mkMerge types;
 
   package = flake.packages.${pkgs.stdenv.hostPlatform.system}.default;
-  packageName = package.name;
+  packageName = package.pname;
   cfg = config.services.${packageName};
 
   caddy =

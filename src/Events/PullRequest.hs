@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedLabels #-}
-{-# LANGUAGE TypeOperators #-}
 
 module Events.PullRequest (processPrOpen) where
 
@@ -15,7 +14,7 @@ import Servant (Handler)
 import System.Random (randomRIO)
 
 processPrOpen :: (AppState) => PullRequestPayload -> Handler [PullReviewRequest]
-processPrOpen prp = processReviewers prp
+processPrOpen = processReviewers
 
 -- FIXME: We'll move helper functions to independent like Prelude in future
 pickRandom :: (MonadIO m) => [a] -> m (Maybe a)

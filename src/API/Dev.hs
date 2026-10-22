@@ -12,7 +12,7 @@ import Kotiba.Prelude
 import Servant
 import Servant.Server.Generic (AsServer)
 
-data Resp = Resp
+newtype Resp = Resp
   { res :: Int
   }
   deriving stock (Generic, Show)
@@ -21,17 +21,17 @@ data Resp = Resp
 -- Routes
 type DevRoutes :: Type -> Type
 data DevRoutes route = MkDevRoutes
-  { _createRole :: route :- "roles" :> ReqBody '[JSON] Role :> Post '[JSON] (RoleView)
-  , _createUser :: route :- "users" :> ReqBody '[JSON] User :> Post '[JSON] (UserView)
+  { _createRole :: route :- "roles" :> ReqBody '[JSON] Role :> Post '[JSON] RoleView
+  , _createUser :: route :- "users" :> ReqBody '[JSON] User :> Post '[JSON] UserView
   }
   deriving stock (Generic)
 
-createRole :: (AppState) => Role -> Handler (RoleView)
+createRole :: (AppState) => Role -> Handler RoleView
 createRole r = do
   rr <- DB.create (type (Entity Role)) r
   pure $ entityToRoleView rr
 
-createUser :: (AppState) => User -> Handler (UserView)
+createUser :: (AppState) => User -> Handler UserView
 createUser u = do
   rr <- DB.create (type (Entity User)) u
   pure $ entityToUserView rr

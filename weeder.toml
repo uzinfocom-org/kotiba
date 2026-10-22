@@ -1,0 +1,10 @@
+roots = [
+  "^Main\\.main$",
+  "^Paths_.*",
+  "^Database\\.Types\\.",
+  "^API\\.apiProxy$",
+  "^API\\.Util\\.(runUVerbT|throwUVerb|throwBadRequest|respond201)$",
+  "^Database\\.(migrateDB'|getById|createKey|getAll|getByFrId|backportExists)$",
+  "^Kotiba\\.Prelude\\.!\\?\\?$",
+]
+type-class-roots = true

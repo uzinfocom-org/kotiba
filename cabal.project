@@ -1,6 +1,14 @@
 packages:
   .
-  ./../forgejo
+
+program-locations
+  alex-location: alex
+  happy-location: happy
+
+source-repository-package
+  type: git
+  location: https://github.com/uzinfocom-org/forgejo.git
+  tag: 0156d80cdff69866df8e68a025a5d64450532b24
 
 source-repository-package
   type: git

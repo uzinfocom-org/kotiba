@@ -5,6 +5,7 @@
 module Database where
 
 import Control.Monad (void)
+import Data.Functor ((<&>))
 import Data.Maybe (fromMaybe, listToMaybe)
 import Data.Time (getCurrentTime)
 import Database.Esqueleto (Entity (..), runMigration)
@@ -37,12 +38,12 @@ Usage: getById (type (Entity User)) userId
 -}
 getById
   :: forall e
-    ->( AppState
-      , MonadIO m
-      , PersistEntity (RecordOf e)
-      , PersistEntityBackend (RecordOf e) ~ SqlBackend
-      , e ~ Entity (RecordOf e)
-      )
+  ->( AppState
+    , MonadIO m
+    , PersistEntity (RecordOf e)
+    , PersistEntityBackend (RecordOf e) ~ SqlBackend
+    , e ~ Entity (RecordOf e)
+    )
   => Key (RecordOf e)
   -> m (Maybe e)
 getById _ i = withPoolDB $ DB.getEntity i
@@ -52,12 +53,12 @@ Usage: getBy (type (Entity User)) (UniqueUsername "eshmat")
 -}
 getBy
   :: forall e
-    ->( AppState
-      , MonadIO m
-      , PersistEntity (RecordOf e)
-      , PersistEntityBackend (RecordOf e) ~ SqlBackend
-      , e ~ Entity (RecordOf e)
-      )
+  ->( AppState
+    , MonadIO m
+    , PersistEntity (RecordOf e)
+    , PersistEntityBackend (RecordOf e) ~ SqlBackend
+    , e ~ Entity (RecordOf e)
+    )
   => Unique (RecordOf e)
   -> m (Maybe e)
 getBy _ u = withPoolDB $ DB.getBy u
@@ -77,8 +78,10 @@ upsert
   -> r
   -> m (Key r)
 upsert existing updates record =
-  fromMaybe (withPoolDB $ DB.insert record)
-    $ (\(Entity k _) -> k <$ withPoolDB (DB.update k updates)) <$> existing
+  maybe
+    (withPoolDB $ DB.insert record)
+    (\(Entity k _) -> k <$ withPoolDB (DB.update k updates))
+    existing
 
 {- | Insert a record, or update fields of the entity with the same unique key, in one query.
 Unlike 'upsert' it doesn't need existing entity from the caller.
@@ -102,13 +105,13 @@ Usage: create (type (Entity User)) userRecord
 -}
 create
   :: forall e
-    ->( AppState
-      , DB.SafeToInsert (RecordOf e)
-      , MonadIO m
-      , PersistEntity (RecordOf e)
-      , PersistEntityBackend (RecordOf e) ~ SqlBackend
-      , e ~ Entity (RecordOf e)
-      )
+  ->( AppState
+    , DB.SafeToInsert (RecordOf e)
+    , MonadIO m
+    , PersistEntity (RecordOf e)
+    , PersistEntityBackend (RecordOf e) ~ SqlBackend
+    , e ~ Entity (RecordOf e)
+    )
   => RecordOf e -> m e
 create _ r = withPoolDB $ DB.insertEntity r
 
@@ -117,13 +120,13 @@ Usage: create (type (Entity User)) userRecord
 -}
 createKey
   :: forall e
-    ->( AppState
-      , DB.SafeToInsert (RecordOf e)
-      , MonadIO m
-      , PersistEntity (RecordOf e)
-      , PersistEntityBackend (RecordOf e) ~ SqlBackend
-      , e ~ Entity (RecordOf e)
-      )
+  ->( AppState
+    , DB.SafeToInsert (RecordOf e)
+    , MonadIO m
+    , PersistEntity (RecordOf e)
+    , PersistEntityBackend (RecordOf e) ~ SqlBackend
+    , e ~ Entity (RecordOf e)
+    )
   => RecordOf e -> m (Key (RecordOf e))
 createKey _ r = withPoolDB $ DB.insert r
 
@@ -132,12 +135,12 @@ Usage: getAll (type (Entity User))
 -}
 getAll
   :: forall e
-    ->( AppState
-      , MonadIO m
-      , PersistEntity (RecordOf e)
-      , PersistEntityBackend (RecordOf e) ~ SqlBackend
-      , e ~ Entity (RecordOf e)
-      )
+  ->( AppState
+    , MonadIO m
+    , PersistEntity (RecordOf e)
+    , PersistEntityBackend (RecordOf e) ~ SqlBackend
+    , e ~ Entity (RecordOf e)
+    )
   => m [e]
 getAll _ = withPoolDB $ DB.selectList [] []
 
@@ -186,8 +189,7 @@ getByRole role =
 getByFrId :: (AppState, MonadIO m) => FR.UserId -> m (Maybe (Entity User))
 getByFrId uid =
   withPoolDB
-    $ DB.selectList [UserFrId ==. frUser uid] []
-      >>= pure . listToMaybe
+    $ DB.selectList [UserFrId ==. frUser uid] [] <&> listToMaybe
 
 backportExists :: (AppState, MonadIO m) => FrId -> Int -> Text -> m Bool
 backportExists repoFrId srcNum target =
@@ -248,11 +250,11 @@ getRepoUsersByRole role repoFrId =
 getUsernamesByRole :: (AppState, MonadIO m) => RoleId -> FrId -> m [Text]
 getUsernamesByRole role repoFrId = do
   perRepo <- getRepoUsersByRole role repoFrId
-  if not (null perRepo)
-    then pure perRepo
-    else do
-      global <- getByRole role
-      pure [(entityVal u).userUsername | u <- global]
+  if not (null perRepo) then
+    pure perRepo
+  else do
+    global <- getByRole role
+    pure $ map (userUsername . entityVal) global
 
 getMaintainerUsernames, getContributorUsernames :: (AppState, MonadIO m) => FrId -> m [Text]
 getMaintainerUsernames = getUsernamesByRole (toSqlKey 1)

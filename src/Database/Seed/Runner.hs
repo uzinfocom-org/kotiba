@@ -12,7 +12,7 @@ import System.Directory (doesFileExist, getModificationTime)
 import Text.Read (readMaybe)
 
 -- | Run the full seeding pipeline starting with empty ID maps.
-applySeed :: (AppState, MonadIO m, MonadError SeedError m) => SeedData -> m ()
+applySeed :: (AppState, MonadError SeedError m, MonadIO m) => SeedData -> m ()
 applySeed sd =
   evalStateT
     ( do
@@ -32,7 +32,7 @@ readStoredMtime path = do
 {- | Check if the seed file changed since last run; if so, parse and apply it.
 Missing file, broken file or missing reference is an error, the caller decides what to do with it.
 -}
-seedIfChanged :: (MonadIO m, MonadError SeedError m) => AppSt -> FilePath -> m ()
+seedIfChanged :: (MonadError SeedError m, MonadIO m) => AppSt -> FilePath -> m ()
 seedIfChanged st seedPath = do
   exists <- liftIO $ doesFileExist seedPath
   unless exists $ throwError $ SeedFileNotFound seedPath
@@ -40,7 +40,7 @@ seedIfChanged st seedPath = do
   mtime <- liftIO $ getModificationTime seedPath
   storedMtime <- liftIO $ readStoredMtime mtimePath
 
-  when (mtime `notElem` storedMtime) $ do
+  unless (mtime `elem` storedMtime) $ do
     liftIO $ putStrLn "Seed: file changed, applying..."
     sd <- eitherDecodeFileStrict seedPath <!!> SeedParseError
     let ?st = st

@@ -90,10 +90,11 @@ record job = do
       name = payload.prpRepository.repoName
       repo = DB.Repository repoId url name
 
-  repoKey <- upsertBy
-    (UniqueRepositoryFrRepoId repoId)
-    [RepositoryFrRepoId =. repoId]
-    repo
+  repoKey <-
+    upsertBy
+      (UniqueRepositoryFrRepoId repoId)
+      [RepositoryFrRepoId =. repoId]
+      repo
 
   authorKey <- resolveUser pr.prUser
   mergedByKey <- traverse resolveUser pr.prMergedBy
@@ -118,7 +119,7 @@ enrich job prKey = do
     replaceFiles prKey $ toFile prKey <$> files
     replaceCommits prKey commitRows
     markFilesSynced prKey
-  where
+ where
   payload = job.jobPayload
   owner = payload.prpRepository.repoOwner.userLogin
   repo = payload.prpRepository.repoName
