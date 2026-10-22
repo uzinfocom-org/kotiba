@@ -92,7 +92,6 @@ run = do
               , db = pool
               , forgejo = mkAppEnv cenv ("token " <> fgToken)
               , trackQueue = queue
-              -- , whSecret = Nothing
               , whSecret = webhookSec
               }
           settings = setPort c.port $ setHost "*" defaultSettings
