@@ -49,19 +49,19 @@ catchExceptions app req res =
 
 readNonEmptyFile :: FilePath -> IO T.Text
 readNonEmptyFile path = do
-  content <- TIO.readFile path
-  let cleaned = T.strip content
-  if T.null cleaned then
+  content <- T.strip <$> TIO.readFile path
+  if T.null content then
     fail $ "Error: Required configuration file '" <> path <> "' is empty."
   else
-    pure cleaned
+    pure content
 
 readOptionalSecret :: FilePath -> IO (Maybe ByteString)
 readOptionalSecret path = do
   content <- T.strip <$> TIO.readFile path
-  if T.null content
-    then Nothing <$ putStrLn "WARNING: webhook secret is empty, signatures are NOT verified"
-    else pure . Just $ encodeUtf8 content
+  if T.null content then
+    Nothing <$ putStrLn "WARNING: webhook secret is empty, signatures are NOT verified"
+  else
+    pure . Just $ encodeUtf8 content
 
 run :: IO ()
 run = do
@@ -79,9 +79,10 @@ run = do
 
       fgToken <- readNonEmptyFile $ T.unpack c.forgejoToken
       webhookSec <-
-        if T.null c.webhookSecret
-          then pure Nothing
-          else readOptionalSecret (T.unpack c.webhookSecret)
+        if T.null c.webhookSecret then
+          pure Nothing
+        else
+          readOptionalSecret (T.unpack c.webhookSecret)
 
       queue <- newTQueueIO
       let cenv = mkClientEnv manager baseUrl
