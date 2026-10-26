@@ -27,6 +27,7 @@ import Network.Wai.Handler.Warp (defaultSettings, runSettings, setHost, setPort)
 import Options.Generic
 import Servant
 import Servant.Client (mkClientEnv, parseBaseUrl)
+import System.Exit (die)
 import System.IO (BufferMode (..), hSetBuffering, stderr, stdout)
 import Toml.Schema.Matcher (Result (..))
 
@@ -39,6 +40,18 @@ newtype Options w = Options
 deriving anyclass instance ParseRecord (Options Wrapped)
 deriving stock instance Show (Options Unwrapped)
 
+type StartupError :: Type
+data StartupError
+  = ConfigLoadFailed
+  | SecretFileEmpty FilePath
+
+renderStartupError :: StartupError -> String
+renderStartupError ConfigLoadFailed = "Failed to load config"
+renderStartupError (SecretFileEmpty path) = "Required configuration file '" <> path <> "' is empty."
+
+dieWith :: StartupError -> IO a
+dieWith = die . renderStartupError
+
 catchExceptions :: Application -> Application
 catchExceptions app req res =
   app req res `catch` \(ex :: SomeException) -> do
@@ -49,12 +62,11 @@ catchExceptions app req res =
         [(hContentType, "application/json")]
         mempty
 
-readNonEmptyFile :: FilePath -> IO T.Text
-readNonEmptyFile path = do
-  content <- T.strip <$> TIO.readFile path
-  case content of
-    Empty -> fail $ "Error: Required configuration file '" <> path <> "' is empty."
-    _ -> pure content
+readNonEmptyFile :: FilePath -> IO (Either StartupError T.Text)
+readNonEmptyFile path = nonEmpty . T.strip <$> TIO.readFile path
+ where
+  nonEmpty Empty = Left (SecretFileEmpty path)
+  nonEmpty content = Right content
 
 readOptionalSecret :: FilePath -> IO (Maybe ByteString)
 readOptionalSecret path = do
@@ -77,7 +89,7 @@ run = do
       manager <- newTlsManager
       baseUrl <- parseBaseUrl $ T.unpack c.forgejoUrl
 
-      fgToken <- readNonEmptyFile $ T.unpack c.forgejoToken
+      fgToken <- either dieWith pure =<< readNonEmptyFile (T.unpack c.forgejoToken)
       webhookSec <-
         case c.webhookSecret of
           Empty -> pure Nothing
@@ -107,4 +119,4 @@ run = do
 
       _ <- forkIO worker
       runSettings settings (catchExceptions runApi)
-    Failure _ -> putStrLn "Failed to load config"
+    Failure _ -> dieWith ConfigLoadFailed
