@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE PatternSynonyms #-}
 
 module Server (run) where
 
@@ -10,6 +11,7 @@ import Control.Exception (SomeException, catch)
 import Control.Monad.Except (runExceptT)
 import Control.Monad.Logger (runStdoutLoggingT)
 import Data.ByteString (ByteString)
+import Data.Text (pattern Empty)
 import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.IO qualified as TIO
@@ -50,18 +52,16 @@ catchExceptions app req res =
 readNonEmptyFile :: FilePath -> IO T.Text
 readNonEmptyFile path = do
   content <- T.strip <$> TIO.readFile path
-  if T.null content then
-    fail $ "Error: Required configuration file '" <> path <> "' is empty."
-  else
-    pure content
+  case content of
+    Empty -> fail $ "Error: Required configuration file '" <> path <> "' is empty."
+    _ -> pure content
 
 readOptionalSecret :: FilePath -> IO (Maybe ByteString)
 readOptionalSecret path = do
   content <- T.strip <$> TIO.readFile path
-  if T.null content then
-    Nothing <$ putStrLn "WARNING: webhook secret is empty, signatures are NOT verified"
-  else
-    pure . Just $ encodeUtf8 content
+  case content of
+    Empty -> Nothing <$ putStrLn "WARNING: webhook secret is empty, signatures are NOT verified"
+    _ -> pure . Just $ encodeUtf8 content
 
 run :: IO ()
 run = do
