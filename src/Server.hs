@@ -79,10 +79,9 @@ run = do
 
       fgToken <- readNonEmptyFile $ T.unpack c.forgejoToken
       webhookSec <-
-        if T.null c.webhookSecret then
-          pure Nothing
-        else
-          readOptionalSecret (T.unpack c.webhookSecret)
+        case c.webhookSecret of
+          Empty -> pure Nothing
+          _ -> readOptionalSecret $ T.unpack c.webhookSecret
 
       queue <- newTQueueIO
       let cenv = mkClientEnv manager baseUrl
