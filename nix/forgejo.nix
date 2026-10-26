@@ -11,8 +11,8 @@ mkDerivation {
   version = "0.1.0.0";
   src = fetchgit {
     url = "https://github.com/uzinfocom-org/forgejo.git";
-    sha256 = "0jy6mm2kl31195diclm2ln0kg2v728bzhm4nhkgqwy7zvxw6sbf2";
-    rev = "0156d80cdff69866df8e68a025a5d64450532b24";
+    sha256 = "0ndzp99byfdakcphy96wwfaly03cc9yghqd1rnmajgzyvbpvi297";
+    rev = "4aa53ba869db02ee9a50c358e832407eec1897db";
     fetchSubmodules = true;
   };
   libraryHaskellDepends = [
