@@ -95,5 +95,8 @@ runApi :: (AppState) => Application
 runApi =
   serveWithContext
     (Proxy @(ToServantApi ApiServer))
-    (WebhookSecret ?st.whSecret :. errorFormatters)
-    (toServant $ mkServer)
+    (secret :. errorFormatters)
+    (toServant mkServer)
+ where
+  secret :: WebhookSecret
+  secret = maybe Unsigned Signed ?st.whSecret

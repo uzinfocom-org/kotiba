@@ -61,7 +61,6 @@ library
     , http-media
     , http-types
     , lens
-    , memory
     , monad-logger
     , mtl
     , named
@@ -70,6 +69,7 @@ library
     , persistent
     , persistent-postgresql
     , persistent-records
+    , ram
     , random
     , resource-pool
     , safe-exceptions
