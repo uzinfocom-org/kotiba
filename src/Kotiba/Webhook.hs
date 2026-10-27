@@ -5,10 +5,10 @@ module Kotiba.Webhook where
 
 import Control.Monad (unless)
 import Control.Monad.IO.Class (liftIO)
-import Crypto.Hash (SHA256)
+import Crypto.Hash (SHA256, digestFromByteString)
 import Crypto.MAC.HMAC (HMAC (..), hmac)
 import Data.Aeson (FromJSON, eitherDecode)
-import Data.ByteArray (constEq)
+-- import Data.ByteArray (constEq)
 import Data.ByteArray.Encoding qualified as BAE
 import Data.ByteString qualified as BS
 import Data.ByteString.Lazy qualified as BSL
@@ -38,7 +38,8 @@ verifySignature Unsigned _ _ = Right ()
 verifySignature (Signed key) hs body = do
   hex <- maybe (Left MissingSig) Right (lookup "X-Forgejo-Signature" hs)
   sig <- either (const $ Left MalformedSig) Right (BAE.convertFromBase BAE.Base16 hex :: Either String BS.ByteString)
-  unless (hmacGetDigest (mac key) `constEq` sig) $ Left BadSig
+  given <- maybe (Left BadSig) Right (digestFromByteString sig)
+  unless (given == hmacGetDigest (mac key)) $ Left BadSig
  where
   mac :: BS.ByteString -> HMAC SHA256
   mac k = hmac k (BSL.toStrict body)

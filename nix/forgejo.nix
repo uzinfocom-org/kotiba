@@ -11,8 +11,8 @@ mkDerivation {
   version = "0.1.0.0";
   src = fetchgit {
     url = "https://github.com/uzinfocom-org/forgejo.git";
-    sha256 = "0ndzp99byfdakcphy96wwfaly03cc9yghqd1rnmajgzyvbpvi297";
-    rev = "4aa53ba869db02ee9a50c358e832407eec1897db";
+    sha256 = "1xyd1803gjbhhnm68a7znpjpj12sz3ba8lc7hx8shwyagp6dc54n";
+    rev = "ee2d36db63b230aa6c200914f7e547e06db43bf3";
     fetchSubmodules = true;
   };
   libraryHaskellDepends = [
@@ -23,7 +23,10 @@ mkDerivation {
     servant-server sop-core stm text time transformers uuid vector wai
     wai-extra warp
   ];
-  testHaskellDepends = [ base hspec hspec-wai ];
+  testHaskellDepends = [
+    aeson base hspec hspec-wai http-api-data http-client-tls mtl
+    servant servant-client servant-server text time
+  ];
   homepage = "https://github.com/uzinfocom-org/forgejo";
   license = lib.licenses.bsd3;
 }

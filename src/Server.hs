@@ -27,8 +27,8 @@ import Network.Wai.Handler.Warp (defaultSettings, runSettings, setHost, setPort)
 import Options.Generic
 import Servant
 import Servant.Client (mkClientEnv, parseBaseUrl)
-import System.Exit (die)
-import System.IO (BufferMode (..), hSetBuffering, stderr, stdout)
+import System.Exit (ExitCode (..), exitWith)
+import System.IO (BufferMode (..), hPutStrLn, hSetBuffering, stderr, stdout)
 import Toml.Schema.Matcher (Result (..))
 
 type Options :: Type -> Type
@@ -45,12 +45,19 @@ data StartupError
   = ConfigLoadFailed
   | SecretFileEmpty FilePath
 
+exConfig :: ExitCode
+exConfig = ExitFailure 78
+
+startupExitCode :: StartupError -> ExitCode
+startupExitCode ConfigLoadFailed = exConfig
+startupExitCode (SecretFileEmpty _) = exConfig
+
 renderStartupError :: StartupError -> String
 renderStartupError ConfigLoadFailed = "Failed to load config"
 renderStartupError (SecretFileEmpty path) = "Required configuration file '" <> path <> "' is empty."
 
 dieWith :: StartupError -> IO a
-dieWith = die . renderStartupError
+dieWith e = hPutStrLn stderr (renderStartupError e) *> exitWith (startupExitCode e)
 
 catchExceptions :: Application -> Application
 catchExceptions app req res =
