@@ -13,6 +13,7 @@ import Data.ByteArray.Encoding qualified as BAE
 import Data.ByteString qualified as BS
 import Data.ByteString.Lazy qualified as BSL
 import Data.ByteString.Lazy.Char8 qualified as BSLC
+import Network.HTTP.Types (RequestHeaders)
 import Network.Wai (requestHeaders, strictRequestBody)
 import Servant
 import Servant.Server.Internal.Delayed (addBodyCheck)
@@ -23,6 +24,24 @@ data SignedBody a
 
 -- | Lives in servant 'Context', found by type. 'Unsigned' means no verification.
 data WebhookSecret = Unsigned | Signed BS.ByteString
+
+data SigError = MissingSig | MalformedSig | BadSig
+  deriving (Eq, Show)
+
+sigErr :: SigError -> ServerError
+sigErr MissingSig = err401{errBody = "Missing X-Forgejo-Signature"}
+sigErr MalformedSig = err400{errBody = "Malformed X-Forgejo-Signature"}
+sigErr BadSig = err401{errBody = "Invalid X-Forgejo-Signature"}
+
+verifySignature :: WebhookSecret -> RequestHeaders -> BSL.ByteString -> Either SigError ()
+verifySignature Unsigned _ _ = Right ()
+verifySignature (Signed key) hs body = do
+  hex <- maybe (Left MissingSig) Right (lookup "X-Forgejo-Signature" hs)
+  sig <- either (const $ Left MalformedSig) Right (BAE.convertFromBase BAE.Base16 hex :: Either String BS.ByteString)
+  unless (hmacGetDigest (mac key) `constEq` sig) $ Left BadSig
+ where
+  mac :: BS.ByteString -> HMAC SHA256
+  mac k = hmac k (BSL.toStrict body)
 
 instance
   (FromJSON a, HasContextEntry ctx WebhookSecret, HasServer api ctx)
@@ -36,32 +55,13 @@ instance
   -- runs once on startup, only builds the recipe
   route _ ctx sub = route (Proxy @api) ctx (addBodyCheck sub (pure ()) (const check))
    where
-    secret :: WebhookSecret
-    secret = getContextEntry ctx
-
-    sigInvalid = err401{errBody = "Invalid X-Forgejo-Signature"}
-
     -- runs on every request, in body stage
     check :: DelayedIO a
     check = withRequest $ \req -> do
       -- body can be read only once and HMAC needs exact bytes, so keep raw
       raw <- liftIO $ strictRequestBody req
 
-      case secret of
-        Unsigned -> pure ()
-        Signed key ->
-          unless (maybe False (validSignature key raw) (lookup "x-forgejo-signature" (requestHeaders req)))
-            $ delayedFail sigInvalid
+      either (delayedFail . sigErr) pure
+        $ verifySignature (getContextEntry ctx) (requestHeaders req) raw
 
-      -- parse only after signature is fine
       either (\e -> delayedFail err400{errBody = BSLC.pack e}) pure $ eitherDecode raw
-
-    validSignature :: BS.ByteString -> BSL.ByteString -> BS.ByteString -> Bool
-    validSignature key raw sigHex =
-      expected `constEq` sigHex
-     where
-      expected :: BS.ByteString
-      expected = BAE.convertToBase BAE.Base16 (hmacGetDigest mac)
-
-      mac :: HMAC SHA256
-      mac = hmac key (BSL.toStrict raw)
