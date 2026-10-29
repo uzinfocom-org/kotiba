@@ -12,12 +12,13 @@ import Data.Aeson (FromJSON, eitherDecode)
 import Data.ByteArray.Encoding qualified as BAE
 import Data.ByteString qualified as BS
 import Data.ByteString.Lazy qualified as BSL
-import Data.ByteString.Lazy.Char8 qualified as BSLC
+import Data.Text qualified as T
+import Data.Text.Encoding (encodeUtf8)
 import Network.HTTP.Types (RequestHeaders)
 import Network.Wai (requestHeaders, strictRequestBody)
 import Servant
 import Servant.Server.Internal.Delayed (addBodyCheck)
-import Servant.Server.Internal.DelayedIO (DelayedIO, delayedFail, withRequest)
+import Servant.Server.Internal.DelayedIO (DelayedIO, delayedFailFatal, withRequest)
 
 -- | Like @ReqBody '[JSON] a@, but checks HMAC signature first and decodes JSON after.
 data SignedBody a
@@ -58,11 +59,15 @@ instance
    where
     -- runs on every request, in body stage
     check :: DelayedIO a
-    check = withRequest $ \req -> do
-      -- body can be read only once and HMAC needs exact bytes, so keep raw
-      raw <- liftIO $ strictRequestBody req
+    check = do
+      let secret = getContextEntry ctx
+      req <- withRequest pure
+      body <- liftIO $ strictRequestBody req
+      orFail sigErr $ verifySignature secret (requestHeaders req) body
+      orFail decodeErr $ eitherDecode body
 
-      either (delayedFail . sigErr) pure
-        $ verifySignature (getContextEntry ctx) (requestHeaders req) raw
+decodeErr :: String -> ServerError
+decodeErr e = err400{errBody = "Bad JSON: " <> BSL.fromStrict (encodeUtf8 $ T.pack e)}
 
-      either (\e -> delayedFail err400{errBody = BSLC.pack e}) pure $ eitherDecode raw
+orFail :: (e -> ServerError) -> Either e a -> DelayedIO a
+orFail toErr = either (delayedFailFatal . toErr) pure

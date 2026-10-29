@@ -45,12 +45,12 @@ data StartupError
   = ConfigLoadFailed
   | SecretFileEmpty FilePath
 
-exConfig :: ExitCode
-exConfig = ExitFailure 78
+exitFailure :: ExitCode
+exitFailure = ExitFailure 78
 
 startupExitCode :: StartupError -> ExitCode
-startupExitCode ConfigLoadFailed = exConfig
-startupExitCode (SecretFileEmpty _) = exConfig
+startupExitCode ConfigLoadFailed = exitFailure
+startupExitCode (SecretFileEmpty _) = exitFailure
 
 renderStartupError :: StartupError -> String
 renderStartupError ConfigLoadFailed = "Failed to load config"
