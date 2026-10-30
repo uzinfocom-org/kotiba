@@ -28,6 +28,7 @@ data Config = Config
   , databasePoolSize :: !Int
   , forgejoUrl :: !Text
   , forgejoToken :: !Text
+  , webhookSecret :: !Text
   , identityName :: !Text
   , identityEmail :: !Text
   , seedFile :: !FilePath

@@ -1,12 +1,13 @@
 { mkDerivation, aeson, base, bytestring, conduit
-, conduit-combinators, containers, directory, esqueleto, filepath
-, forgejo, generic-lens, hspec, hspec-wai, http-api-data
+, conduit-combinators, containers, crypton, directory, esqueleto
+, filepath, forgejo, generic-lens, hspec, hspec-wai, http-api-data
 , http-client-tls, http-media, http-types, lens, lib, monad-logger
 , mtl, named, optparse-generic, path-pieces, persistent
-, persistent-postgresql, persistent-records, random, resource-pool
-, safe-exceptions, servant-client, servant-client-core
-, servant-server, shower, stm, text, time, toml-parser
-, transformers, typed-process, uuid, vector, wai, wai-extra, warp
+, persistent-postgresql, persistent-records, ram, random
+, resource-pool, safe-exceptions, servant-client
+, servant-client-core, servant-server, shower, stm, text, time
+, toml-parser, transformers, typed-process, uuid, vector, wai
+, wai-extra, warp
 }:
 mkDerivation {
   pname = "kotiba";
@@ -16,13 +17,13 @@ mkDerivation {
   isExecutable = true;
   libraryHaskellDepends = [
     aeson base bytestring conduit conduit-combinators containers
-    directory esqueleto filepath forgejo generic-lens http-api-data
-    http-client-tls http-media http-types lens monad-logger mtl named
-    optparse-generic path-pieces persistent persistent-postgresql
-    persistent-records random resource-pool safe-exceptions
-    servant-client servant-client-core servant-server shower stm text
-    time toml-parser transformers typed-process uuid vector wai
-    wai-extra warp
+    crypton directory esqueleto filepath forgejo generic-lens
+    http-api-data http-client-tls http-media http-types lens
+    monad-logger mtl named optparse-generic path-pieces persistent
+    persistent-postgresql persistent-records ram random resource-pool
+    safe-exceptions servant-client servant-client-core servant-server
+    shower stm text time toml-parser transformers typed-process uuid
+    vector wai wai-extra warp
   ];
   executableHaskellDepends = [ base ];
   testHaskellDepends = [ base hspec hspec-wai ];

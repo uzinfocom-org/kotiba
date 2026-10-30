@@ -37,6 +37,7 @@ import Control.Monad.Error.Class (MonadError (..))
 import Control.Monad.IO.Class (MonadIO (..))
 import Control.Monad.Reader (MonadReader, ReaderT (..), asks, runReaderT)
 import Data.Aeson (FromJSON, ToJSON)
+import Data.ByteString (ByteString)
 import Data.Kind (Constraint, Type)
 import Data.Text (Text)
 import Database.Persist.Sql (SqlPersistT, runMigration, runSqlPool)
@@ -53,6 +54,7 @@ data AppSt = MkAppSt
   , db :: PoolSql
   , forgejo :: AppEnv
   , trackQueue :: TQueue TrackJob
+  , whSecret :: Maybe ByteString
   }
 
 type AppState :: Constraint

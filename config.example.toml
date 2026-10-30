@@ -3,9 +3,11 @@ port = 5678
 database = "postgresql://postgres:postgres@localhost:5432/postgres"
 databasePoolSize = 10
 forgejoUrl = "git.oss.uzinfocom.uz"
-forgejoToken = "/path/secret"
+forgejoToken = "/path/to/forgejoToken"
+webhookSecret = "/path/to/webhookSecret"
 identityName = "John Doe"
 identityEmail = "johndoe@gmail.com"
+seedFile = "/path/to/seed.json"
 
 [[bots]]
 login = "support"

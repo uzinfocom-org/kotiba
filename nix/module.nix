@@ -126,6 +126,10 @@ let
         User = cfg.user;
         Group = cfg.group;
         Restart = "always";
+        RestartSec = "5s";
+        RestartSteps = 5;
+        RestartMaxDelaySec = "5min";
+        RestartPreventExitStatus = "78";
         SyslogLevel = "debug";
         StandardOutput = "append:/var/log/${packageName}/info.log";
         StandardError = "append:/var/log/${packageName}/error.log";
@@ -160,6 +164,8 @@ let
         SystemCallArchitectures = "native";
         UMask = "0027";
       };
+
+      unitConfig = { StartLimitIntervalSec = 0; };
     };
   };
 
@@ -172,6 +178,7 @@ let
     databasePoolSize = cfg.databasePoolSize;
     forgejoUrl = cfg.forgejoUrl;
     forgejoToken = cfg.forgejoToken;
+    webhookSecret = cfg.webhookSecret;
     identityName = cfg.identityName;
     identityEmail = cfg.identityEmail;
     seedFile = "${cfg.dataDir}/seed.json";
@@ -311,13 +318,18 @@ in {
       forgejoToken = mkOption {
         type = types.str;
         description = ''
-          API token kotiba uses to authenticate against Forgejo.
+          Path to a file containing the Forgejo API token (e.g. managed by agenix or sops-nix).
+          The file is read at startup, so the token never enters the Nix store.
+        '';
+      };
 
-          This ends up in a 0640 root:''${cfg.group}-readable file in
-          ''${cfg.dataDir}/config.toml, but is otherwise stored in plaintext
-          in the Nix store via this option. Prefer passing a path read at
-          activation time (e.g. via agenix/sops-nix) over a literal string
-          in your configuration.
+      webhookSecret = mkOption {
+        type = types.str;
+        default = "";
+        example = "/run/secrets/kotiba-webhook-secret";
+        description = ''
+          Path to a file containing the webhook HMAC secret.
+          Empty means signatures are NOT verified.
         '';
       };
 

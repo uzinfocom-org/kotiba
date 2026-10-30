@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE PatternSynonyms #-}
 
 module Server (run) where
 
@@ -9,6 +10,8 @@ import Control.Concurrent.STM (newTQueueIO)
 import Control.Exception (SomeException, catch)
 import Control.Monad.Except (runExceptT)
 import Control.Monad.Logger (runStdoutLoggingT)
+import Data.ByteString (ByteString)
+import Data.Text (pattern Empty)
 import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.IO qualified as TIO
@@ -24,7 +27,8 @@ import Network.Wai.Handler.Warp (defaultSettings, runSettings, setHost, setPort)
 import Options.Generic
 import Servant
 import Servant.Client (mkClientEnv, parseBaseUrl)
-import System.IO (BufferMode (..), hSetBuffering, stderr, stdout)
+import System.Exit (ExitCode (..), exitWith)
+import System.IO (BufferMode (..), hPutStrLn, hSetBuffering, stderr, stdout)
 import Toml.Schema.Matcher (Result (..))
 
 type Options :: Type -> Type
@@ -36,6 +40,25 @@ newtype Options w = Options
 deriving anyclass instance ParseRecord (Options Wrapped)
 deriving stock instance Show (Options Unwrapped)
 
+type StartupError :: Type
+data StartupError
+  = ConfigLoadFailed
+  | SecretFileEmpty FilePath
+
+exitFailure :: ExitCode
+exitFailure = ExitFailure 78
+
+startupExitCode :: StartupError -> ExitCode
+startupExitCode ConfigLoadFailed = exitFailure
+startupExitCode (SecretFileEmpty _) = exitFailure
+
+renderStartupError :: StartupError -> String
+renderStartupError ConfigLoadFailed = "Failed to load config"
+renderStartupError (SecretFileEmpty path) = "Required configuration file '" <> path <> "' is empty."
+
+dieWith :: StartupError -> IO a
+dieWith e = hPutStrLn stderr (renderStartupError e) *> exitWith (startupExitCode e)
+
 catchExceptions :: Application -> Application
 catchExceptions app req res =
   app req res `catch` \(ex :: SomeException) -> do
@@ -45,6 +68,19 @@ catchExceptions app req res =
         status500
         [(hContentType, "application/json")]
         mempty
+
+readNonEmptyFile :: FilePath -> IO (Either StartupError T.Text)
+readNonEmptyFile path = nonEmpty . T.strip <$> TIO.readFile path
+ where
+  nonEmpty Empty = Left (SecretFileEmpty path)
+  nonEmpty content = Right content
+
+readOptionalSecret :: FilePath -> IO (Maybe ByteString)
+readOptionalSecret path = do
+  content <- T.strip <$> TIO.readFile path
+  case content of
+    Empty -> Nothing <$ putStrLn "WARNING: webhook secret is empty, signatures are NOT verified"
+    _ -> pure . Just $ encodeUtf8 content
 
 run :: IO ()
 run = do
@@ -59,11 +95,24 @@ run = do
       pool <- runStdoutLoggingT $ createPostgresqlPool (encodeUtf8 c.database) c.databasePoolSize
       manager <- newTlsManager
       baseUrl <- parseBaseUrl $ T.unpack c.forgejoUrl
-      fgToken <- T.strip <$> liftIO (TIO.readFile $ T.unpack c.forgejoToken)
+
+      fgToken <- either dieWith pure =<< readNonEmptyFile (T.unpack c.forgejoToken)
+      webhookSec <-
+        case c.webhookSecret of
+          Empty -> pure Nothing
+          _ -> readOptionalSecret $ T.unpack c.webhookSecret
+
       queue <- newTQueueIO
       let cenv = mkClientEnv manager baseUrl
           fc = c{forgejoToken = fgToken}
-          st = MkAppSt{config = fc, db = pool, forgejo = mkAppEnv cenv ("token " <> fgToken), trackQueue = queue}
+          st =
+            MkAppSt
+              { config = fc
+              , db = pool
+              , forgejo = mkAppEnv cenv ("token " <> fgToken)
+              , trackQueue = queue
+              , whSecret = webhookSec
+              }
           settings = setPort c.port $ setHost "*" defaultSettings
       migrate' st
       let ?st = st
@@ -77,4 +126,4 @@ run = do
 
       _ <- forkIO worker
       runSettings settings (catchExceptions runApi)
-    Failure _ -> putStrLn "Failed to load config"
+    Failure _ -> dieWith ConfigLoadFailed

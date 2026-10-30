@@ -40,6 +40,7 @@ library
     Git.Core
     Git.PullRequest
     Kotiba.Prelude
+    Kotiba.Webhook
     Server
 
   build-depends:
@@ -49,6 +50,7 @@ library
     , conduit
     , conduit-combinators
     , containers
+    , crypton
     , directory
     , esqueleto
     , filepath
@@ -67,6 +69,7 @@ library
     , persistent
     , persistent-postgresql
     , persistent-records
+    , ram
     , random
     , resource-pool
     , safe-exceptions

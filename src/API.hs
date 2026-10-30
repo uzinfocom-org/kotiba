@@ -11,12 +11,14 @@ module API where
 import API.Dev (DevRoutes, devHandlers)
 import API.Util (errorFormatters)
 import Control.Monad (void)
+import Data.Aeson (Value)
 import Events.Backport (processBackport)
 import Events.PullRequest (processPrOpen)
 import Events.Tracking.Job (TrackJob (..))
 import Events.Tracking.Worker (enqueue)
 import Forgejo hiding (User, userId)
 import Kotiba.Prelude
+import Kotiba.Webhook (SignedBody, WebhookSecret (..))
 import Servant
 import Servant.Server.Generic
 
@@ -24,7 +26,7 @@ type API :: Type -> Type
 data API route = MkAPI
   { health :: route :- "health" :> Get '[JSON] Integer
   , dev :: route :- "dev" :> NamedRoutes DevRoutes
-  , webhook :: route :- WebhookAPI
+  , webhook :: route :- WebhookAPI (SignedBody Value)
   }
   deriving stock (Generic)
 
@@ -93,5 +95,8 @@ runApi :: (AppState) => Application
 runApi =
   serveWithContext
     (Proxy @(ToServantApi ApiServer))
-    errorFormatters
+    (secret :. errorFormatters)
     (toServant mkServer)
+ where
+  secret :: WebhookSecret
+  secret = maybe Unsigned Signed ?st.whSecret
