@@ -24,12 +24,6 @@
       "role": "maintainer"
     },
     {
-      "login": "let_rec",
-      "username": "let_rec",
-      "frId": 13,
-      "role": "contributor"
-    },
-    {
       "login": "xfeusw",
       "username": "xfeusw",
       "frId": 14,
@@ -115,11 +109,6 @@
     },
     {
       "repoName": "relago",
-      "username": "let_rec",
-      "role": "contributor"
-    },
-    {
-      "repoName": "relago",
       "username": "rafanochi",
       "role": "contributor"
     },
@@ -137,11 +126,6 @@
       "repoName": "xeonitte",
       "username": "bahrom04",
       "role": "maintainer"
-    },
-    {
-      "repoName": "xeonitte",
-      "username": "let_rec",
-      "role": "contributor"
     },
     {
       "repoName": "xeonitte",
