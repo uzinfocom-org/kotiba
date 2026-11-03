@@ -26,7 +26,9 @@ backportBranchName :: Int -> Text -> String
 backportBranchName srcNum target = "backport-" <> show srcNum <> "-to-" <> T.unpack target
 
 {- | This function is separated in error handling purposes from 'cherryPick'.
-It requires all arguments of 'cherryPick' function in order process of cherry pick with return type 'GitMonad' which uses 'ExceptT' and 'GitMonad' for error handling.
+It requires all arguments of 'cherryPick' function in order process of cherry pick with return type 'GitMonad', which uses 'ExceptT' for errors and 'ReaderT' for GitEnv.
+Process is: clone or fetch, create backport branch from target, cherry-pick and push.
+If cherry-pcik conflicts, branch is cleaned up and 'BackportConflict' is returned.
 -}
 processCherryPick
   :: (AppState, GitMonad m)
@@ -72,7 +74,7 @@ processCherryPick (Arg dataDir) (Arg owner) (Arg repo) (Arg cloneUrl) (Arg srcNu
       pure $ BackportConflict conflictOutput
 
 {- | This is the main function of 'Git.Backport' module for backporting.
-It calls 'processCherryPick' and transfers it to 'processBackport' function from 'Events.Backport' module.
+It created 'GitEnv' from Forgejo token, runs 'processCherryPick' via 'runGitM' and transfers result to 'processBackport' function from 'Events.Backport' module.
 -}
 cherryPick
   :: (AppState, MonadIO m)

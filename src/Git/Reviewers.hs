@@ -9,6 +9,8 @@ import Kotiba.Prelude
 import Named
 import Servant (Handler)
 
+-- This function requests review from given users and tams on a pull request.
+-- It Uses 'addReviewer' method from 'Forgejo' library.
 assignReviewers
   :: (AppState)
   => "owner" :! Text
