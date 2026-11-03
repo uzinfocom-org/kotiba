@@ -122,7 +122,7 @@ backportFailureComment maintainers target diagnostic =
        Automatic backport to `"""
     <> target
     <> """
-       ` could not be completed.
+       ` could not be completed.\n
        """
     <> T.take 2000 diagnostic
     <> """
