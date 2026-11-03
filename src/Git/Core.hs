@@ -2,30 +2,31 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RequiredTypeArguments #-}
-{-# LANGUAGE TypeOperators #-}
 
 module Git.Core
   ( GitError (..)
+  , GitEnv
+  , GitM
   , GitMonad
-  , GitOperation (..)
+  , GitOperation
   , GitOp (..)
-  , withGit
+  , mkGitEnv
+  , runGitM
   , requireGit
+  , tryGit
   , bestEffortGit
-  , authHeaderArgs
-  , repoPath
-  , ensureClone
-  , parentCount
-  , setGitIdentity
   ) where
 
 import Control.Monad (void)
+import Control.Monad.Except (ExceptT, runExceptT)
+import Control.Monad.Reader (MonadReader, ReaderT, ask, runReaderT)
 import Data.ByteString.Lazy qualified as BL
 import Data.ByteString.Lazy.Char8 qualified as BL8
 import Data.Text qualified as T
 import Kotiba.Prelude
 import Named
 import System.Directory (createDirectoryIfMissing, doesDirectoryExist)
+import System.Environment (getEnvironment)
 import System.FilePath (takeDirectory, (</>))
 import System.Process.Typed
 
@@ -40,58 +41,58 @@ data GitError
   | ParentCountFailed Text
   | PushFailed Text
   | ConfigFailed Text
+  | CherryPickFailed Text
   deriving stock (Show)
 
-type GitMonad m = (MonadIO m, MonadError GitError m)
+data GitEnv = GitEnv
+  { geToken :: Text
+  , geEnv :: [(String, String)]
+  }
+
+mkGitEnv :: (MonadIO m) => Text -> m GitEnv
+mkGitEnv token = do
+  base <- liftIO getEnvironment
+  pure
+    GitEnv
+      { geToken = token
+      , geEnv = ("GIT_TERMINAL_PROMPT", "0") : filter ((/= "GIT_TERMINAL_PROMPT") . fst) base
+      }
+
+type GitMonad m = (MonadIO m, MonadError GitError m, MonadReader GitEnv m)
+
+type GitM = ReaderT GitEnv (ExceptT GitError IO)
+
+runGitM :: (MonadIO m) => GitEnv -> GitM a -> m (Either GitError a)
+runGitM env action = liftIO . runExceptT $ runReaderT action env
 
 {- | The set of git operations that can fail, used to tag `requireGit`
 calls so the correct error constructor is inferred automatically.
 -}
-data GitOp = Clone | Fetch | Push | Checkout | ParentInspect | SetIdentity
+data GitOp = Clone | Fetch | Push | Checkout | ParentInspect | SetIdentity | CherryPick
 
 -- | This typeclass defines default constraints for Git operations
 type GitOperation :: GitOp -> Constraint
 class GitOperation op where
   operationError :: Text -> GitError
 
-instance GitOperation 'Clone where operationError = CloneFailed
-instance GitOperation 'Fetch where operationError = FetchFailed
-instance GitOperation 'Push where operationError = PushFailed
+  needsAuth :: Bool
+  needsAuth = False
+
+instance GitOperation 'Clone where
+  operationError = CloneFailed
+  needsAuth = True
+
+instance GitOperation 'Fetch where
+  operationError = FetchFailed
+  needsAuth = True
+instance GitOperation 'Push where
+  operationError = PushFailed
+  needsAuth = True
+
 instance GitOperation 'Checkout where operationError = CheckoutFailed
 instance GitOperation 'ParentInspect where operationError = ParentCountFailed
 instance GitOperation 'SetIdentity where operationError = ConfigFailed
-
-{- | Run git, returning captured stdout+stderr either way, so failures
-carry real diagnostic content instead of an opaque error.
--}
-withGit :: (MonadIO m) => FilePath -> [String] -> m (Either Text BL.ByteString)
-withGit dir args = do
-  (ec, out, err) <-
-    readProcess
-      $ setEnv [("GIT_TERMINAL_PROMPT", "0")]
-      $ setWorkingDir dir
-      $ proc "git" args
-  pure $ case ec of
-    ExitSuccess -> Right out
-    ExitFailure _ -> Left $ T.pack . BL8.unpack $ out <> err
-
-{- | Run git, throwing the operation's own GitError on failure.
-Usage: requireGit (type Push) path args
--}
-requireGit
-  :: forall op
-  ->(GitMonad m, GitOperation op)
-  => FilePath
-  -> [String]
-  -> m BL.ByteString
-requireGit op dir args = withGit dir args >>= either (throwError . operationError @op) pure
-
-{- | Run git and discard the result either way. Use for best-effort,
-expected-to-sometimes-fail steps (e.g. deleting a branch that may
-not exist).
--}
-bestEffortGit :: (MonadIO m) => FilePath -> [String] -> m ()
-bestEffortGit dir args = void $ withGit dir args
+instance GitOperation 'CherryPick where operationError = CherryPickFailed
 
 {- | Config flags that inject a Forgejo API token as an HTTP Authorization
 header into a single git invocation. Prepend to any git args that hit
@@ -105,53 +106,43 @@ authHeaderArgs token =
   , "http.followRedirects=false"
   ]
 
-{- | This function is used to determine local repo path.
-It takes dataDir, owner and repo argument.
--}
-repoPath :: FilePath -> Text -> Text -> FilePath
-repoPath dataDir owner repo = dataDir </> T.unpack owner </> T.unpack repo
+gitArgs :: forall op. (GitOperation op) => GitEnv -> [String] -> [String]
+gitArgs env args
+  | needsAuth @op = authHeaderArgs env.geToken <> args
+  | otherwise = args
 
-{- | Ensure a local clone exists at dataDir/owner/repo, cloning fresh
-or fetching if it already exists. Reusable by any feature that
-needs a working tree, not just backporting.
--}
-ensureClone
-  :: (GitMonad m)
-  => "dataDir" :! FilePath
-  -> "owner" :! Text
-  -> "repo" :! Text
-  -> "cloneUrl" :! Text
-  -> "token" :! Text
-  -> m FilePath
-ensureClone (Arg dataDir) (Arg owner) (Arg repo) (Arg cloneUrl) (Arg token) = do
-  let path = repoPath dataDir owner repo
-      headerArgs = authHeaderArgs token
-  exists <- liftIO $ doesDirectoryExist path
-  if exists then
-    void $ requireGit (type Fetch) path (headerArgs <> ["fetch", "origin"])
-  else do
-    liftIO $ createDirectoryIfMissing True $ takeDirectory path
-    void
-      $ requireGit
-        (type Clone)
-        (takeDirectory path)
-        (headerArgs <> ["clone", T.unpack cloneUrl, path])
-  pure path
+runGit :: (MonadIO m) => GitEnv -> FilePath -> [String] -> m (Either Text BL.ByteString)
+runGit env dir args = do
+  (ec, out, err) <-
+    readProcess
+      $ setEnv env.geEnv
+      $ setWorkingDir dir
+      $ proc "git" args
+  pure $ case ec of
+    ExitSuccess -> Right out
+    ExitFailure _ -> Left $ T.pack . BL8.unpack $ out <> err
 
-{- | Number of parents of a commit. 1 = normal commit, 2+ = merge commit.
-Useful anywhere a commit's shape needs inspecting, not just cherry-pick.
--}
-parentCount :: (GitMonad m) => FilePath -> Text -> m Int
-parentCount path sha = do
-  out <- requireGit (type ParentInspect) path ["rev-list", "--parents", "-n", "1", T.unpack sha]
-  pure $ length (words $ BL8.unpack out) - 1
+requireGit
+  :: forall op
+  ->(GitMonad m, GitOperation op)
+  => FilePath
+  -> [String]
+  -> m BL.ByteString
+requireGit op dir args = do
+  env <- ask
+  runGit env dir (gitArgs @op env args) >>= either (throwError . operationError @op) pure
 
-{- | Setting local Git identity for repo with 3 arguments:
-path - repo path where should be setted identity
-name - name of identity
-email - email of identity
--}
-setGitIdentity :: (GitMonad m) => FilePath -> Text -> Text -> m ()
-setGitIdentity path name email = do
-  void $ requireGit (type SetIdentity) path ["config", "user.name", T.unpack name]
-  void $ requireGit (type SetIdentity) path ["config", "user.email", T.unpack email]
+tryGit
+  :: forall op
+  ->(GitOperation op, MonadIO m, MonadReader GitEnv m)
+  => FilePath
+  -> [String]
+  -> m (Either Text BL.ByteString)
+tryGit op dir args = do
+  env <- ask
+  runGit env dir (gitArgs @op env args)
+
+bestEffortGit :: (MonadIO m, MonadReader GitEnv m) => FilePath -> [String] -> m ()
+bestEffortGit dir args = do
+  env <- ask
+  void $ runGit env dir args

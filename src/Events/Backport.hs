@@ -32,7 +32,7 @@ backportPrefix = "backport "
 If there's no target branch, it returns Nothing.
 __Example label__:
 @
-"backport release-26.05"
+"backport release 26.05"
 @
 -}
 parseBackportTarget :: Label -> Maybe Text
@@ -90,6 +90,7 @@ renderGitError = \case
   ParentCountFailed t -> "Could not inspect commit:\n" <> t
   PushFailed t -> "Push failed:\n" <> t
   ConfigFailed t -> "Setting git identity is failed:\n" <> t
+  CherryPickFailed t -> "Cherry-pick failed:\n" <> t
 
 -- | Render a Forgejo API failure for use in a maintainer-facing comment.
 renderForgejoError :: ForgejoError -> Text
@@ -179,7 +180,6 @@ processBackport PullRequestPayload{..} = do
               ! #owner owner
               ! #repo repo
               ! #cloneUrl cloneUrl
-              ! #token ?st.config.forgejoToken
               ! #srcNum pr.prNumber
               ! #target target
               ! #sha sha

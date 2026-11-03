@@ -38,7 +38,8 @@ library
     Events.Tracking.Worker
     Git.Backport
     Git.Core
-    Git.PullRequest
+    Git.Repo
+    Git.Reviewers
     Kotiba.Prelude
     Kotiba.Webhook
     Server

@@ -1,6 +1,6 @@
 {-# LANGUAGE TypeOperators #-}
 
-module Git.PullRequest where
+module Git.Reviewers where
 
 import Forgejo
 import Forgejo.API.PullRequest (PullReviewRequest)
