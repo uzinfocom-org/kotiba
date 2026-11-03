@@ -128,7 +128,7 @@ ensureClone (Arg dataDir) (Arg owner) (Arg repo) (Arg cloneUrl) (Arg token) = do
       headerArgs = authHeaderArgs token
   exists <- liftIO $ doesDirectoryExist path
   if exists then
-    void $ requireGit (type Fetch) path ["fetch", "origin"]
+    void $ requireGit (type Fetch) path (headerArgs <> ["fetch", "origin"])
   else do
     liftIO $ createDirectoryIfMissing True $ takeDirectory path
     void
