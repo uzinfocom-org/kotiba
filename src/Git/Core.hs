@@ -24,10 +24,7 @@ import Data.ByteString.Lazy qualified as BL
 import Data.ByteString.Lazy.Char8 qualified as BL8
 import Data.Text qualified as T
 import Kotiba.Prelude
-import Named
-import System.Directory (createDirectoryIfMissing, doesDirectoryExist)
 import System.Environment (getEnvironment)
-import System.FilePath (takeDirectory, (</>))
 import System.Process.Typed
 
 {- | Real, unrecoverable git failures. Any operation using these
