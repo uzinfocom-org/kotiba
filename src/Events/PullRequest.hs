@@ -7,7 +7,7 @@ import Data.Maybe (maybeToList)
 import Database qualified as DB
 import Forgejo
 import Forgejo.API.PullRequest (PullReviewRequest)
-import Git.PullRequest (assignReviewers)
+import Git.Reviewers (assignReviewers)
 import Kotiba.Prelude hiding ((!?))
 import Named
 import Servant (Handler)
