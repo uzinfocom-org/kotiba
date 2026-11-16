@@ -222,7 +222,9 @@
                 deadnix
                 jq
                 just
-              ] ++ pre-commit.enabledPackages;
+              ] ++ pre-commit.enabledPackages
+              # Need minimal apple sdk 15.x for crypton >= 2.2 includes.
+              ++ pkgs.lib.optionals pkgs.stdenv.isDarwin [ apple-sdk_15 ];
 
             shellHook = ''
               echo "Welcome to kotiba dev shell"
