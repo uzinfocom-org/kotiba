@@ -21,6 +21,7 @@ library
     API.Dev
     API.Util
     Config
+    Config.Load
     Database
     Database.PullRequest
     Database.Seed
@@ -46,6 +47,7 @@ library
 
   build-depends:
     , aeson
+    , barbies
     , base
     , bytestring
     , conduit
@@ -53,6 +55,7 @@ library
     , containers
     , crypton
     , directory
+    , either
     , esqueleto
     , filepath
     , forgejo

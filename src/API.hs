@@ -11,14 +11,13 @@ module API where
 import API.Dev (DevRoutes, devHandlers)
 import API.Util (errorFormatters)
 import Control.Monad (void)
-import Data.Aeson (Value)
 import Events.Backport (processBackport)
 import Events.PullRequest (processPrOpen)
 import Events.Tracking.Job (TrackJob (..))
 import Events.Tracking.Worker (enqueue)
 import Forgejo hiding (User, userId)
 import Kotiba.Prelude
-import Kotiba.Webhook (SignedBody, WebhookSecret (..))
+import Kotiba.Webhook (OrgSecrets (..), SignedBody, Verified (..), WebhookSecret (..))
 import Servant
 import Servant.Server.Generic
 
@@ -26,34 +25,45 @@ type API :: Type -> Type
 data API route = MkAPI
   { health :: route :- "health" :> Get '[JSON] Integer
   , dev :: route :- "dev" :> NamedRoutes DevRoutes
-  , webhook :: route :- WebhookAPI (SignedBody Value)
+  , webhook :: route :- WebhookAPI SignedBody
   }
   deriving stock (Generic)
 
 {- | This function handles payload of webhook.
 Pull request events are put in tracking queue first, after that they go to 'onPullRequest' as before.
 -}
-handleWebhook :: (AppState) => Delivery -> WebhookPayload -> Handler ()
-handleWebhook d (WPPullRequest p) = do
-  track d p
-  onPullRequest p
-handleWebhook _ (WPPush p) = onPush p
-handleWebhook _ (WPIssueComment p) = onIssueComment p
-handleWebhook _ (WPActionRun p) = onActionRun p
-handleWebhook _ (WPRelease _) = pure ()
+handleWebhook :: (AppState) => OrgEnv -> Delivery -> WebhookPayload -> Handler ()
+handleWebhook env d (WPPullRequest p) = do
+  track env d p
+  onPullRequest env p
+handleWebhook _ _ (WPPush p) = onPush p
+handleWebhook _ _ (WPIssueComment p) = onIssueComment p
+handleWebhook _ _ (WPActionRun p) = onActionRun p
+handleWebhook _ _ (WPRelease _) = pure ()
+
+receiveWebhook
+  :: (AppState)
+  => Maybe (Either Text ForgejoEvent)
+  -> Maybe (Either Text ForgejoEventType)
+  -> Maybe Text
+  -> Verified
+  -> Handler ()
+receiveWebhook ev evTy did (Verified org v) = do
+  env <- pure (lookupOrg org) !? err401
+  webhookHandlerWith (handleWebhook env) ev evTy did v
 
 {- | This function puts pull request event in the queue of tracking worker.
 Delivery id is the key of event, so request without it gets 400.
 -}
-track :: (AppState) => Delivery -> PullRequestPayload -> Handler ()
-track d p = do
+track :: (AppState) => OrgEnv -> Delivery -> PullRequestPayload -> Handler ()
+track env d p = do
   delivery <- pure d.deliveryId !? err400{errBody = "missing X-Forgejo-Delivery header"}
-  enqueue $ TrackJob delivery p
+  enqueue $ TrackJob delivery env.orgName p
 
-onPullRequest :: (AppState) => PullRequestPayload -> Handler ()
-onPullRequest = \case
-  pl@PullRequestPayload{prpAction = PrOpened} -> void $ processPrOpen pl
-  pl@PullRequestPayload{prpAction = (PrClosed; PrLabelUpdated)} -> processBackport pl
+onPullRequest :: (AppState) => OrgEnv -> PullRequestPayload -> Handler ()
+onPullRequest env = \case
+  pl@PullRequestPayload{prpAction = PrOpened} -> void $ processPrOpen env pl
+  pl@PullRequestPayload{prpAction = (PrClosed; PrLabelUpdated)} -> processBackport env pl
   _ -> pure ()
 
 onIssueComment :: (AppState) => IssueCommentPayload -> Handler ()
@@ -78,7 +88,7 @@ apiHandlers =
   MkAPI
     { health = heal
     , dev = devHandlers
-    , webhook = webhookHandlerWith handleWebhook
+    , webhook = receiveWebhook
     }
 
 heal :: (AppState) => Handler Integer
@@ -95,8 +105,8 @@ runApi :: (AppState) => Application
 runApi =
   serveWithContext
     (Proxy @(ToServantApi ApiServer))
-    (secret :. errorFormatters)
+    (orgSecrets :. errorFormatters)
     (toServant mkServer)
  where
-  secret :: WebhookSecret
-  secret = maybe Unsigned Signed ?st.whSecret
+  orgSecrets :: OrgSecrets
+  orgSecrets = OrgSecrets (fmap (Signed . (.orgWebhookSecret)) . lookupOrg)

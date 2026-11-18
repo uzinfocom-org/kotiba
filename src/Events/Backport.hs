@@ -140,8 +140,8 @@ backportFailureComment maintainers target diagnostic =
 {- | This function is used to create comment about failure while backporting in source PR.
 It uses 'createIssueComment' method and 'CreateIssueCommentOption' from 'Forgejo' library for commenting.
 -}
-commentOnFailure :: (AppState) => Text -> Text -> Int -> FrId -> Text -> Text -> Handler ()
-commentOnFailure owner repo prNumber repoFrId target diagnostic = do
+commentOnFailure :: (AppState) => OrgEnv -> Text -> Text -> Int -> FrId -> Text -> Text -> Handler ()
+commentOnFailure env owner repo prNumber repoFrId target diagnostic = do
   maintainers <- DB.getMaintainerUsernames repoFrId
   let body = backportFailureComment maintainers target diagnostic
       opts =
@@ -151,7 +151,7 @@ commentOnFailure owner repo prNumber repoFrId target diagnostic = do
           , ciscoIndex = prNumber
           , ciscoApiJson = CreateIssueCommentApiOption body
           }
-  res <- tryForgejo $ createIssueComment opts
+  res <- tryForgejo env $ createIssueComment opts
   case res of
     Right _ -> pure ()
     Left commentErr -> liftIO $ printer commentErr
@@ -161,8 +161,8 @@ It calls to 'cherryPick' function from 'Git.Backport' module in order to operate
 Based on results of 'cherryPick', this function writes records to its own DB and informs maintainers of repository in source PR if there's an error.
 When it comes to successful results, 'processBackport' creates backport pull request to target branch which is indicated in label.
 -}
-processBackport :: (AppState) => PullRequestPayload -> Handler ()
-processBackport PullRequestPayload{..} = do
+processBackport :: (AppState) => OrgEnv -> PullRequestPayload -> Handler ()
+processBackport env PullRequestPayload{..} = do
   let pr = prpPullRequest
       owner = prpRepository.repoOwner.userLogin
       repo = prpRepository.repoName
@@ -175,7 +175,7 @@ processBackport PullRequestPayload{..} = do
       Just sha -> do
         result <-
           liftIO
-            $ cherryPick
+            $ cherryPick env
               ! #dataDir ?st.config.dataDir
               ! #owner owner
               ! #repo repo
@@ -186,15 +186,15 @@ processBackport PullRequestPayload{..} = do
         case result of
           Left gitErr -> do
             DB.recordBackport repoFrId pr.prNumber target Nothing BPError
-            commentOnFailure owner repo pr.prNumber repoFrId target (renderGitError gitErr)
+            commentOnFailure env owner repo pr.prNumber repoFrId target (renderGitError gitErr)
           Right (BackportConflict diagnostic) -> do
             DB.recordBackport repoFrId pr.prNumber target Nothing BPConflict
-            commentOnFailure owner repo pr.prNumber repoFrId target diagnostic
+            commentOnFailure env owner repo pr.prNumber repoFrId target diagnostic
           Right (BackportPushed _ branch) -> do
             let opts = backportPullRequestOption pr target branch
-            prRes <- tryForgejo $ createPullRequest owner repo opts
+            prRes <- tryForgejo env $ createPullRequest owner repo opts
             case prRes of
               Left fgErr -> do
                 DB.recordBackport repoFrId pr.prNumber target Nothing BPError
-                commentOnFailure owner repo pr.prNumber repoFrId target (renderForgejoError fgErr)
+                commentOnFailure env owner repo pr.prNumber repoFrId target (renderForgejoError fgErr)
               Right newPr -> DB.recordBackport repoFrId pr.prNumber target (Just newPr.prNumber) BPOpened

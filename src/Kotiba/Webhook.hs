@@ -7,11 +7,13 @@ import Control.Monad (unless)
 import Control.Monad.IO.Class (liftIO)
 import Crypto.Hash (SHA256, digestFromByteString)
 import Crypto.MAC.HMAC (HMAC (..), hmac)
-import Data.Aeson (FromJSON, eitherDecode)
+import Data.Aeson (Value, eitherDecode, withObject, (.:))
+import Data.Aeson.Types (Parser, parseEither)
 -- import Data.ByteArray (constEq)
 import Data.ByteArray.Encoding qualified as BAE
 import Data.ByteString qualified as BS
 import Data.ByteString.Lazy qualified as BSL
+import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
 import Network.HTTP.Types (RequestHeaders)
@@ -20,8 +22,24 @@ import Servant
 import Servant.Server.Internal.Delayed (addBodyCheck)
 import Servant.Server.Internal.DelayedIO (DelayedIO, delayedFailFatal, withRequest)
 
+unknownOrg :: ServerError
+unknownOrg = err401{errBody = "Unknown organization"}
+
 -- | Like @ReqBody '[JSON] a@, but checks HMAC signature first and decodes JSON after.
-data SignedBody a
+data SignedBody
+
+data Verified = Verified
+  { org :: Text
+  , payload :: Value
+  }
+
+newtype OrgSecrets = OrgSecrets (Text -> Maybe WebhookSecret)
+
+ownerLogin :: Value -> Parser Text
+ownerLogin = withObject "payload" \o -> do
+  repo <- o .: "repository"
+  owner <- repo .: "owner"
+  T.toLower <$> owner .: "login"
 
 -- | Lives in servant 'Context', found by type. 'Unsigned' means no verification.
 data WebhookSecret = Unsigned | Signed BS.ByteString
@@ -46,11 +64,11 @@ verifySignature (Signed key) hs body = do
   mac k = hmac k (BSL.toStrict body)
 
 instance
-  (FromJSON a, HasContextEntry ctx WebhookSecret, HasServer api ctx)
-  => HasServer (SignedBody a :> api) ctx
+  (HasContextEntry ctx OrgSecrets, HasServer api ctx)
+  => HasServer (SignedBody :> api) ctx
   where
   -- handler takes the decoded body, then the rest
-  type ServerT (SignedBody a :> api) m = a -> ServerT api m
+  type ServerT (SignedBody :> api) m = Verified -> ServerT api m
 
   hoistServerWithContext _ pc nt s = hoistServerWithContext (Proxy @api) pc nt . s
 
@@ -58,13 +76,16 @@ instance
   route _ ctx sub = route (Proxy @api) ctx (addBodyCheck sub (pure ()) (const check))
    where
     -- runs on every request, in body stage
-    check :: DelayedIO a
+    check :: DelayedIO Verified
     check = do
-      let secret = getContextEntry ctx
+      let OrgSecrets secretFor = getContextEntry ctx
       req <- withRequest pure
       body <- liftIO $ strictRequestBody req
-      orFail sigErr $ verifySignature secret (requestHeaders req) body
-      orFail decodeErr $ eitherDecode body
+      v <- orFail decodeErr $ eitherDecode @Value body
+      org <- orFail decodeErr $ parseEither ownerLogin v
+      key <- orFail (const unknownOrg) $ maybe (Left ()) Right (secretFor org)
+      orFail sigErr $ verifySignature key (requestHeaders req) body
+      pure Verified{org, payload = v}
 
 decodeErr :: String -> ServerError
 decodeErr e = err400{errBody = "Bad JSON: " <> BSL.fromStrict (encodeUtf8 $ T.pack e)}

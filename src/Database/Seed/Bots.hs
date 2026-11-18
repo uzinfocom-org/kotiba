@@ -3,7 +3,7 @@
 
 module Database.Seed.Bots where
 
-import Config (BotAccount (..))
+import Config (BotConfig (..))
 import Control.Monad (forM_, void)
 import Database (getBy, upsert)
 import Database.Persist (Entity (..))
@@ -13,7 +13,7 @@ import Database.Types
 import Kotiba.Prelude
 
 -- | Upsert a single bot account using the resolved role key.
-upsertBot :: (AppState, MonadIO m) => RoleId -> BotAccount -> m ()
+upsertBot :: (AppState, MonadIO m) => RoleId -> BotConfig -> m ()
 upsertBot roleKey b = do
   let frId = FrId b.frId
   existing <- getBy (type (Entity User)) (UniqueUserFrId frId)
@@ -32,7 +32,7 @@ upsertBot roleKey b = do
         }
 
 -- | Synchronize a list of system bot accounts against the "bot" role.
-syncBots :: (AppState, MonadError SeedError m, MonadIO m) => [BotAccount] -> m ()
+syncBots :: (AppState, MonadError SeedError m, MonadIO m) => [BotConfig] -> m ()
 syncBots [] = pure ()
 syncBots accounts = do
   Entity roleKey _ <- getBy (type (Entity Role)) (UniqueRoleName "bot") !? SeedBotRoleMissing

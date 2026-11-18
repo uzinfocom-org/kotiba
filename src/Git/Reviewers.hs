@@ -13,14 +13,15 @@ import Servant (Handler)
 -- It Uses 'addReviewer' method from 'Forgejo' library.
 assignReviewers
   :: (AppState)
-  => "owner" :! Text
+  => OrgEnv
+  -> "owner" :! Text
   -> "repo" :! Text
   -> "index" :! Int
   -> "reviewers" :! [Text]
   -> "teamReviewers" :! [Text]
   -> Handler [PullReviewRequest]
-assignReviewers (Arg owner) (Arg repo) (Arg index) (Arg reviewers) (Arg teamReviewers) =
-  withForgejo
+assignReviewers env (Arg owner) (Arg repo) (Arg index) (Arg reviewers) (Arg teamReviewers) =
+  withForgejo env
     $ addReviewer
       PullReviewRequestOptions
         { owner

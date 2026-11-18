@@ -13,7 +13,7 @@ import Named
 import Servant (Handler)
 import System.Random (randomRIO)
 
-processPrOpen :: (AppState) => PullRequestPayload -> Handler [PullReviewRequest]
+processPrOpen :: (AppState) => OrgEnv -> PullRequestPayload -> Handler [PullReviewRequest]
 processPrOpen = processReviewers
 
 -- FIXME: We'll move helper functions to independent like Prelude in future
@@ -21,8 +21,8 @@ pickRandom :: (MonadIO m) => [a] -> m (Maybe a)
 pickRandom [] = pure Nothing
 pickRandom xs = (xs !?) <$> randomRIO (0, length xs - 1)
 
-processReviewers :: (AppState) => PullRequestPayload -> Handler [PullReviewRequest]
-processReviewers PullRequestPayload{..} = do
+processReviewers :: (AppState) => OrgEnv -> PullRequestPayload -> Handler [PullReviewRequest]
+processReviewers env PullRequestPayload{..} = do
   maintainerNames <- DB.getMaintainerUsernames repoFrId
   contributorNames <- DB.getContributorUsernames repoFrId
   luckyContributor <- maybeToList <$> pickRandom contributorNames
@@ -30,7 +30,7 @@ processReviewers PullRequestPayload{..} = do
   let reviewers = maintainerNames <> luckyContributor
       usernames = excluding author reviewers
 
-  assignReviewers
+  assignReviewers env
     ! #owner orgName
     ! #repo repoName
     ! #index index

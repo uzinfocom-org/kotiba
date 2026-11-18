@@ -36,6 +36,7 @@ import Kotiba.Prelude
 -}
 data TrackError
   = TrackForgejo ForgejoError
+  | TrackUnknownOrg Text
   | TrackCrashed Text
   deriving stock (Show)
 
@@ -111,8 +112,9 @@ enrich :: (AppState) => TrackJob -> PullRequestId -> ExceptT TrackError IO ()
 enrich job prKey = do
   synced <- filesSynced prKey
   when (needsFiles (eventKind payload) || not synced) $ do
-    files <- tryForgejo (getPullRequestFiles owner repo number Nothing) <??> TrackForgejo
-    commits <- tryForgejo (getPullRequestCommits owner repo number Nothing) <??> TrackForgejo
+    env <- pure (lookupOrg job.jobOrg) !? TrackUnknownOrg job.jobOrg
+    files <- tryForgejo env (getPullRequestFiles owner repo number Nothing) <??> TrackForgejo
+    commits <- tryForgejo env (getPullRequestCommits owner repo number Nothing) <??> TrackForgejo
     commitRows <- forM commits $ \c -> do
       author <- traverse (uncurry getOrCreateUser) $ commitPerson c
       pure $ toCommit prKey author c

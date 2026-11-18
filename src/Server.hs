@@ -5,12 +5,14 @@ module Server (run) where
 
 import API
 import Config
+import Config.Load (loadConfig)
 import Control.Concurrent (forkIO)
 import Control.Concurrent.STM (newTQueueIO)
 import Control.Exception (SomeException, catch)
 import Control.Monad.Except (runExceptT)
 import Control.Monad.Logger (runStdoutLoggingT)
-import Data.ByteString (ByteString)
+import Data.ByteString qualified as BS
+import Data.Map qualified as Map
 import Data.Text (pattern Empty)
 import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
@@ -29,7 +31,6 @@ import Servant
 import Servant.Client (mkClientEnv, parseBaseUrl)
 import System.Exit (ExitCode (..), exitWith)
 import System.IO (BufferMode (..), hPutStrLn, hSetBuffering, stderr, stdout)
-import Toml.Schema.Matcher (Result (..))
 
 type Options :: Type -> Type
 newtype Options w = Options
@@ -75,13 +76,6 @@ readNonEmptyFile path = nonEmpty . T.strip <$> TIO.readFile path
   nonEmpty Empty = Left (SecretFileEmpty path)
   nonEmpty content = Right content
 
-readOptionalSecret :: FilePath -> IO (Maybe ByteString)
-readOptionalSecret path = do
-  content <- T.strip <$> TIO.readFile path
-  case content of
-    Empty -> Nothing <$ putStrLn "WARNING: webhook secret is empty, signatures are NOT verified"
-    _ -> pure . Just $ encodeUtf8 content
-
 run :: IO ()
 run = do
   hSetBuffering stdout LineBuffering
@@ -89,41 +83,45 @@ run = do
   (op :: Options Unwrapped) <- unwrapRecord "Kotiba application"
   putStrLn "Application ready to start"
 
-  cn <- loadConfig op.cfg
-  case cn of
-    Success _ c -> do
-      pool <- runStdoutLoggingT $ createPostgresqlPool (encodeUtf8 c.database) c.databasePoolSize
-      manager <- newTlsManager
-      baseUrl <- parseBaseUrl $ T.unpack c.forgejoUrl
+  c <- loadConfig defaults op.cfg
+  printer c
 
-      fgToken <- either dieWith pure =<< readNonEmptyFile (T.unpack c.forgejoToken)
-      webhookSec <-
-        case c.webhookSecret of
-          Empty -> pure Nothing
-          _ -> readOptionalSecret $ T.unpack c.webhookSecret
+  pool <- runStdoutLoggingT $ createPostgresqlPool (encodeUtf8 c.database) c.databasePoolSize
+  manager <- newTlsManager
+  baseUrl <- parseBaseUrl $ T.unpack c.forgejoUrl
+  let cenv = mkClientEnv manager baseUrl
 
-      queue <- newTQueueIO
-      let cenv = mkClientEnv manager baseUrl
-          fc = c{forgejoToken = fgToken}
-          st =
-            MkAppSt
-              { config = fc
-              , db = pool
-              , forgejo = mkAppEnv cenv ("token " <> fgToken)
-              , trackQueue = queue
-              , whSecret = webhookSec
-              }
-          settings = setPort c.port $ setHost "*" defaultSettings
-      migrate' st
-      let ?st = st
+  orgEnvs <- flip Map.traverseWithKey c.orgs \name o -> do
+    tok <- either dieWith pure =<< readNonEmptyFile o.bot.token
+    sec <- BS.readFile o.webhookSecret
+    pure
+      OrgEnv
+        { orgName = T.toLower name
+        , orgBot = o.bot
+        , orgToken = tok
+        , orgWebhookSecret = sec
+        , orgForgejo = mkAppEnv cenv ("token" <> tok)
+        }
 
-      sResult <-
-        runExceptT $ do
-          seedIfChanged st c.seedFile
-          syncBots c.bots
+  queue <- newTQueueIO
 
-      either (putStrLn . seedErrorMessage) pure sResult
+  let st =
+        MkAppSt
+          { config = c
+          , db = pool
+          , trackQueue = queue
+          , orgEnvs = orgEnvs
+          }
+      settings = setPort c.port $ setHost "*" defaultSettings
+  migrate' st
+  let ?st = st
 
-      _ <- forkIO worker
-      runSettings settings (catchExceptions runApi)
-    Failure _ -> dieWith ConfigLoadFailed
+  sResult <-
+    runExceptT $ do
+      seedIfChanged st c.seedFile
+      syncBots $ map (.bot) (Map.elems c.orgs)
+
+  either (putStrLn . seedErrorMessage) pure sResult
+
+  _ <- forkIO worker
+  runSettings settings (catchExceptions runApi)
