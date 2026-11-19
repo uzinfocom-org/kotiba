@@ -6,7 +6,7 @@ module Database where
 
 import Control.Monad (void)
 import Data.Functor ((<&>))
-import Data.Maybe (fromMaybe, listToMaybe)
+import Data.Maybe (listToMaybe)
 import Data.Time (getCurrentTime)
 import Database.Esqueleto (Entity (..), runMigration)
 import Database.Persist (Filter, PersistEntity, PersistEntityBackend, Update, (==.))

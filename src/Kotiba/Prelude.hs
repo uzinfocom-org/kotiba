@@ -22,6 +22,7 @@ module Kotiba.Prelude
     -- * Application
   , AppSt (..)
   , AppState
+  , OrgState
   , AppEnv
   , AppM
   , withForgejo
@@ -76,11 +77,14 @@ lookupOrg o = Map.lookup (toLower o) ?st.orgEnvs
 type AppState :: Constraint
 type AppState = (?st :: AppSt)
 
-withForgejo :: OrgEnv -> AppM a -> Handler a
-withForgejo org = runAppM org.orgForgejo
+type OrgState :: Constraint
+type OrgState = (AppState, ?org :: OrgEnv)
 
-tryForgejo :: (MonadIO m) => OrgEnv -> AppM a -> m (Either ForgejoError a)
-tryForgejo org = liftIO . runForgejo org.orgForgejo
+withForgejo :: (OrgState) => AppM a -> Handler a
+withForgejo = runAppM ?org.orgForgejo
+
+tryForgejo :: (MonadIO m, OrgState) => AppM a -> m (Either ForgejoError a)
+tryForgejo action = liftIO $ runForgejo ?org.orgForgejo action
 
 withPool :: (MonadIO m, MonadReader AppSt m) => SqlPersistT IO a -> m a
 withPool q = do

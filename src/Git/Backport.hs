@@ -76,9 +76,8 @@ processCherryPick bot (Arg dataDir) (Arg owner) (Arg repo) (Arg cloneUrl) (Arg s
 It created 'GitEnv' from Forgejo token, runs 'processCherryPick' via 'runGitM' and transfers result to 'processBackport' function from 'Events.Backport' module.
 -}
 cherryPick
-  :: (AppState, MonadIO m)
-  => OrgEnv
-  -> "dataDir" :! FilePath
+  :: (MonadIO m, OrgState)
+  => "dataDir" :! FilePath
   -> "owner" :! Text
   -> "repo" :! Text
   -> "cloneUrl" :! Text
@@ -86,6 +85,6 @@ cherryPick
   -> "target" :! Text
   -> "sha" :! Text
   -> m (Either GitError BackportResult)
-cherryPick org dataDir owner repo cloneUrl srcNum target sha = do
-  env <- mkGitEnv org.orgToken
-  runGitM env $ processCherryPick org.orgBot dataDir owner repo cloneUrl srcNum target sha
+cherryPick dataDir owner repo cloneUrl srcNum target sha = do
+  env <- mkGitEnv ?org.orgToken
+  runGitM env $ processCherryPick ?org.orgBot dataDir owner repo cloneUrl srcNum target sha

@@ -71,7 +71,10 @@ runJob job = do
   done <- safely $ isEventDone job.jobDelivery
   unless done $ do
     (prKey, evKey) <- safely $ record job
-    outcome <- liftIO . runExceptT . safely $ enrich job prKey
+    outcome <- liftIO . runExceptT . safely $ do
+      env <- pure (lookupOrg job.jobOrg) !? TrackUnknownOrg job.jobOrg
+      let ?org = env
+      enrich job prKey
     safely $ finish evKey outcome
 
 -- | This function saves the result of job on the event: done, or failed with reason.
@@ -108,13 +111,12 @@ record job = do
 It's done when the event changes content of PR, or when PR was never fetched before.
 Marker is set at the end, so failed fetch is retried by the next event.
 -}
-enrich :: (AppState) => TrackJob -> PullRequestId -> ExceptT TrackError IO ()
+enrich :: (OrgState) => TrackJob -> PullRequestId -> ExceptT TrackError IO ()
 enrich job prKey = do
   synced <- filesSynced prKey
   when (needsFiles (eventKind payload) || not synced) $ do
-    env <- pure (lookupOrg job.jobOrg) !? TrackUnknownOrg job.jobOrg
-    files <- tryForgejo env (getPullRequestFiles owner repo number Nothing) <??> TrackForgejo
-    commits <- tryForgejo env (getPullRequestCommits owner repo number Nothing) <??> TrackForgejo
+    files <- tryForgejo (getPullRequestFiles owner repo number Nothing) <??> TrackForgejo
+    commits <- tryForgejo (getPullRequestCommits owner repo number Nothing) <??> TrackForgejo
     commitRows <- forM commits $ \c -> do
       author <- traverse (uncurry getOrCreateUser) $ commitPerson c
       pure $ toCommit prKey author c

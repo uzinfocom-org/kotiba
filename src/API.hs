@@ -32,14 +32,14 @@ data API route = MkAPI
 {- | This function handles payload of webhook.
 Pull request events are put in tracking queue first, after that they go to 'onPullRequest' as before.
 -}
-handleWebhook :: (AppState) => OrgEnv -> Delivery -> WebhookPayload -> Handler ()
-handleWebhook env d (WPPullRequest p) = do
-  track env d p
-  onPullRequest env p
-handleWebhook _ _ (WPPush p) = onPush p
-handleWebhook _ _ (WPIssueComment p) = onIssueComment p
-handleWebhook _ _ (WPActionRun p) = onActionRun p
-handleWebhook _ _ (WPRelease _) = pure ()
+handleWebhook :: (OrgState) => Delivery -> WebhookPayload -> Handler ()
+handleWebhook d (WPPullRequest p) = do
+  track d p
+  onPullRequest p
+handleWebhook _ (WPPush p) = onPush p
+handleWebhook _ (WPIssueComment p) = onIssueComment p
+handleWebhook _ (WPActionRun p) = onActionRun p
+handleWebhook _ (WPRelease _) = pure ()
 
 receiveWebhook
   :: (AppState)
@@ -50,29 +50,30 @@ receiveWebhook
   -> Handler ()
 receiveWebhook ev evTy did (Verified org v) = do
   env <- pure (lookupOrg org) !? err401
-  webhookHandlerWith (handleWebhook env) ev evTy did v
+  let ?org = env
+  webhookHandlerWith handleWebhook ev evTy did v
 
 {- | This function puts pull request event in the queue of tracking worker.
 Delivery id is the key of event, so request without it gets 400.
 -}
-track :: (AppState) => OrgEnv -> Delivery -> PullRequestPayload -> Handler ()
-track env d p = do
+track :: (OrgState) => Delivery -> PullRequestPayload -> Handler ()
+track d p = do
   delivery <- pure d.deliveryId !? err400{errBody = "missing X-Forgejo-Delivery header"}
-  enqueue $ TrackJob delivery env.orgName p
+  enqueue $ TrackJob delivery ?org.orgName p
 
-onPullRequest :: (AppState) => OrgEnv -> PullRequestPayload -> Handler ()
-onPullRequest env = \case
-  pl@PullRequestPayload{prpAction = PrOpened} -> void $ processPrOpen env pl
-  pl@PullRequestPayload{prpAction = (PrClosed; PrLabelUpdated)} -> processBackport env pl
+onPullRequest :: (OrgState) => PullRequestPayload -> Handler ()
+onPullRequest = \case
+  pl@PullRequestPayload{prpAction = PrOpened} -> void $ processPrOpen pl
+  pl@PullRequestPayload{prpAction = (PrClosed; PrLabelUpdated)} -> processBackport pl
   _ -> pure ()
 
-onIssueComment :: (AppState) => IssueCommentPayload -> Handler ()
+onIssueComment :: (OrgState) => IssueCommentPayload -> Handler ()
 onIssueComment _ = pure ()
 
-onPush :: (AppState) => PushPayload -> Handler ()
+onPush :: (OrgState) => PushPayload -> Handler ()
 onPush _ = pure ()
 
-onActionRun :: (AppState) => ActionRunPayload -> Handler ()
+onActionRun :: (OrgState) => ActionRunPayload -> Handler ()
 onActionRun _ = pure ()
 
 newtype ApiServer route = MkApiServer

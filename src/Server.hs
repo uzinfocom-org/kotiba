@@ -11,7 +11,6 @@ import Control.Concurrent.STM (newTQueueIO)
 import Control.Exception (SomeException, catch)
 import Control.Monad.Except (runExceptT)
 import Control.Monad.Logger (runStdoutLoggingT)
-import Data.ByteString qualified as BS
 import Data.Map qualified as Map
 import Data.Text (pattern Empty)
 import Data.Text qualified as T
