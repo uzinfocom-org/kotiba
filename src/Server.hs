@@ -93,14 +93,14 @@ run = do
 
   orgEnvs <- flip Map.traverseWithKey c.orgs \name o -> do
     tok <- either dieWith pure =<< readNonEmptyFile o.bot.token
-    sec <- BS.readFile o.webhookSecret
+    sec <- encodeUtf8 <$> (either dieWith pure =<< readNonEmptyFile o.webhookSecret)
     pure
       OrgEnv
         { orgName = T.toLower name
         , orgBot = o.bot
         , orgToken = tok
         , orgWebhookSecret = sec
-        , orgForgejo = mkAppEnv cenv ("token" <> tok)
+        , orgForgejo = mkAppEnv cenv ("token " <> tok)
         }
 
   queue <- newTQueueIO
