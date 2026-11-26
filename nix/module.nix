@@ -177,15 +177,30 @@ let
     database = cfg.database;
     databasePoolSize = cfg.databasePoolSize;
     forgejoUrl = cfg.forgejoUrl;
-    forgejoToken = cfg.forgejoToken;
-    webhookSecret = cfg.webhookSecret;
-    identityName = cfg.identityName;
-    identityEmail = cfg.identityEmail;
+    orgs = lib.mapAttrs (_: o: {
+      webhookSecret = o.webhookSecretFile;
+      bot = {
+        inherit (o.bot) login frId name email;
+        token = o.bot.tokenFile;
+      };
+    }) cfg.orgs;
     seedFile = "${cfg.dataDir}/seed.json";
-    bots = cfg.bots;
   };
 
   asserts = lib.mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = cfg.orgs != { };
+        message =
+          "services.${packageName}.orgs must define at least one organization.";
+      }
+      {
+        assertion = let names = map lib.toLower (lib.attrNames cfg.orgs);
+        in lib.length names == lib.length (lib.unique names);
+        message =
+          "services.${packageName}.orgs has names which differ only in case.";
+      }
+    ];
     warnings = [
       (lib.mkIf (cfg.proxy.enable && cfg.proxy.domain == null)
         "services.${packageName}.proxy.domain must be set in order to properly generate certificate!")
@@ -315,38 +330,57 @@ in {
         '';
       };
 
-      forgejoToken = mkOption {
-        type = types.str;
+      orgs = mkOption {
+        default = { };
+        example = {
+          mikki-org = {
+            webhookSecretFile = "/run/secrets/kotiba-mikki-org-webhook";
+            bot = {
+              login = "kotiba";
+              frId = 8;
+              tokenFile = "/run/secrets/kotiba-mikki-org-token";
+              name = "Kotiba";
+              email = "kotiba@something.com";
+            };
+          };
+        };
         description = ''
-          Path to a file containing the Forgejo API token (e.g. managed by agenix or sops-nix).
-          The file is read at startup, so the token never enters the Nix store.
+          Organizations kotiba serves. The attribute name must match the owner
+          (organization) login in webhook payloads, compared case-insensitively.
+          Each org has its own webhook secret and its own bot account. All files
+          are read at startup, so they never enter the Nix store.
         '';
-      };
-
-      webhookSecret = mkOption {
-        type = types.str;
-        default = "";
-        example = "/run/secrets/kotiba-webhook-secret";
-        description = ''
-          Path to a file containing the webhook HMAC secret.
-          Empty means signatures are NOT verified.
-        '';
-      };
-
-      identityName = mkOption {
-        type = types.str;
-        example = "John Doe";
-        description = ''
-          Git name identity for Bot.
-        '';
-      };
-
-      identityEmail = mkOption {
-        type = types.str;
-        example = "johndoe@mail.com";
-        description = ''
-          Git email identity for bot.
-        '';
+        type = types.attrsOf (types.submodule {
+          options = {
+            webhookSecretFile = mkOption {
+              type = types.str;
+              description =
+                "Path to a file with the HMAC secret of this org's webhook. Must not be empty.";
+            };
+            bot = {
+              login = mkOption {
+                type = types.str;
+                description = "Forgejo login of the bot.";
+              };
+              frId = mkOption {
+                type = types.int;
+                description = "Forgejo user id of the bot.";
+              };
+              tokenFile = mkOption {
+                type = types.str;
+                description = "Path to a file with the bot's API token.";
+              };
+              name = mkOption {
+                type = types.str;
+                description = "Git author name of the bot.";
+              };
+              email = mkOption {
+                type = types.str;
+                description = "Git author email of the bot.";
+              };
+            };
+          };
+        });
       };
 
       seedFile = mkOption {

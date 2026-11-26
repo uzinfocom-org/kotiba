@@ -2,13 +2,15 @@ dataDir = "/var/lib/kotiba/"
 port = 5678
 database = "postgresql://postgres:postgres@localhost:5432/postgres"
 databasePoolSize = 10
-forgejoUrl = "git.oss.uzinfocom.uz"
-forgejoToken = "/path/to/forgejoToken"
-webhookSecret = "/path/to/webhookSecret"
-identityName = "John Doe"
-identityEmail = "johndoe@gmail.com"
+forgejoUrl = "https://git.oss.uzinfocom.uz"
 seedFile = "/path/to/seed.json"
 
-[[bots]]
-login = "support"
+[orgs.my-org]
+webhookSecret = "/path/to/my-org/webhookSecret"
+
+[orgs.my-org.bot]
+login = "miyoviddin"
 frId = 8
+token = "/path/to/my-org/forgejoToken"
+name = "Mikki Bachchan"
+email = "mikki@gmail.com"

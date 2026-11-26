@@ -12,7 +12,7 @@ mkDerivation {
   src = fetchgit {
     url = "https://github.com/uzinfocom-org/forgejo.git";
     sha256 = "1xyd1803gjbhhnm68a7znpjpj12sz3ba8lc7hx8shwyagp6dc54n";
-    rev = "ee2d36db63b230aa6c200914f7e547e06db43bf3";
+    rev = "7223e699d08485e83ecb1a96790180cf96efc3e3";
     fetchSubmodules = true;
   };
   libraryHaskellDepends = [

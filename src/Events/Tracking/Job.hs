@@ -10,6 +10,8 @@ It keeps the payload and the delivery id which comes from @X-Forgejo-Delivery@ h
 data TrackJob = TrackJob
   { jobDelivery :: !Text
   -- ^ Id of delivery, it's the unique key of the event in database.
+  , jobOrg :: !Text
+  -- ^ Lowercased org name, the worker uses it to find the Forgejo client.
   , jobPayload :: !PullRequestPayload
   -- ^ Payload which is sent by Forgejo.
   }

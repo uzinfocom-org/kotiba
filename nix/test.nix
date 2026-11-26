@@ -8,19 +8,20 @@ pkgs.testers.runNixOSTest {
 
     services.kotiba = {
       enable = true;
-      bots = [{
-        login = "support";
-        frId = 8;
-      }];
-
       createDatabaseLocally = true;
-      forgejoToken = "${pkgs.writeText "token" ''
-        fake-token-for-testing
-      ''}";
-
       forgejoUrl = "git.oss.uzinfocom.uz";
-      identityName = "John Doe";
-      identityEmail = "johndoe@mail.com";
+
+      orgs.testorg = {
+        webhookSecretFile =
+          "${pkgs.writeText "webhook-secret" "fake-webhook-secret"}";
+        bot = {
+          login = "support";
+          frId = 8;
+          tokenFile = "${pkgs.writeText "token" "fake-token-for-testing"}";
+          name = "John Doe";
+          email = "johndoe@mail.com";
+        };
+      };
     };
     system.stateVersion = "25.05";
   };

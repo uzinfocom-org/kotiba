@@ -36,6 +36,7 @@ import Kotiba.Prelude
 -}
 data TrackError
   = TrackForgejo ForgejoError
+  | TrackUnknownOrg Text
   | TrackCrashed Text
   deriving stock (Show)
 
@@ -70,7 +71,10 @@ runJob job = do
   done <- safely $ isEventDone job.jobDelivery
   unless done $ do
     (prKey, evKey) <- safely $ record job
-    outcome <- liftIO . runExceptT . safely $ enrich job prKey
+    outcome <- liftIO . runExceptT . safely $ do
+      env <- pure (lookupOrg job.jobOrg) !? TrackUnknownOrg job.jobOrg
+      let ?org = env
+      enrich job prKey
     safely $ finish evKey outcome
 
 -- | This function saves the result of job on the event: done, or failed with reason.
@@ -107,7 +111,7 @@ record job = do
 It's done when the event changes content of PR, or when PR was never fetched before.
 Marker is set at the end, so failed fetch is retried by the next event.
 -}
-enrich :: (AppState) => TrackJob -> PullRequestId -> ExceptT TrackError IO ()
+enrich :: (AppState, OrgState) => TrackJob -> PullRequestId -> ExceptT TrackError IO ()
 enrich job prKey = do
   synced <- filesSynced prKey
   when (needsFiles (eventKind payload) || not synced) $ do

@@ -140,7 +140,7 @@ backportFailureComment maintainers target diagnostic =
 {- | This function is used to create comment about failure while backporting in source PR.
 It uses 'createIssueComment' method and 'CreateIssueCommentOption' from 'Forgejo' library for commenting.
 -}
-commentOnFailure :: (AppState) => Text -> Text -> Int -> FrId -> Text -> Text -> Handler ()
+commentOnFailure :: (AppState, OrgState) => Text -> Text -> Int -> FrId -> Text -> Text -> Handler ()
 commentOnFailure owner repo prNumber repoFrId target diagnostic = do
   maintainers <- DB.getMaintainerUsernames repoFrId
   let body = backportFailureComment maintainers target diagnostic
@@ -161,7 +161,7 @@ It calls to 'cherryPick' function from 'Git.Backport' module in order to operate
 Based on results of 'cherryPick', this function writes records to its own DB and informs maintainers of repository in source PR if there's an error.
 When it comes to successful results, 'processBackport' creates backport pull request to target branch which is indicated in label.
 -}
-processBackport :: (AppState) => PullRequestPayload -> Handler ()
+processBackport :: (AppState, OrgState) => PullRequestPayload -> Handler ()
 processBackport PullRequestPayload{..} = do
   let pr = prpPullRequest
       owner = prpRepository.repoOwner.userLogin
@@ -174,15 +174,14 @@ processBackport PullRequestPayload{..} = do
       Nothing -> pure ()
       Just sha -> do
         result <-
-          liftIO
-            $ cherryPick
-              ! #dataDir ?st.config.dataDir
-              ! #owner owner
-              ! #repo repo
-              ! #cloneUrl cloneUrl
-              ! #srcNum pr.prNumber
-              ! #target target
-              ! #sha sha
+          cherryPick
+            ! #dataDir ?st.config.dataDir
+            ! #owner owner
+            ! #repo repo
+            ! #cloneUrl cloneUrl
+            ! #srcNum pr.prNumber
+            ! #target target
+            ! #sha sha
         case result of
           Left gitErr -> do
             DB.recordBackport repoFrId pr.prNumber target Nothing BPError

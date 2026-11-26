@@ -31,8 +31,9 @@ Process is: clone or fetch, create backport branch from target, cherry-pick and 
 If cherry-pcik conflicts, branch is cleaned up and 'BackportConflict' is returned.
 -}
 processCherryPick
-  :: (AppState, GitMonad m)
-  => "dataDir" :! FilePath
+  :: (GitMonad m)
+  => BotConfig
+  -> "dataDir" :! FilePath
   -> "owner" :! Text
   -> "repo" :! Text
   -> "cloneUrl" :! Text
@@ -40,7 +41,7 @@ processCherryPick
   -> "target" :! Text
   -> "sha" :! Text
   -> m BackportResult
-processCherryPick (Arg dataDir) (Arg owner) (Arg repo) (Arg cloneUrl) (Arg srcNum) (Arg target) (Arg sha) = do
+processCherryPick bot (Arg dataDir) (Arg owner) (Arg repo) (Arg cloneUrl) (Arg srcNum) (Arg target) (Arg sha) = do
   path <-
     ensureClone
       ! #dataDir dataDir
@@ -49,10 +50,8 @@ processCherryPick (Arg dataDir) (Arg owner) (Arg repo) (Arg cloneUrl) (Arg srcNu
       ! #cloneUrl cloneUrl
 
   let branch = backportBranchName srcNum target
-      name = ?st.config.identityName
-      email = ?st.config.identityEmail
 
-  setGitIdentity path name email
+  setGitIdentity path bot.name bot.email
 
   bestEffortGit path ["branch", "-D", branch]
   void $ requireGit (type Checkout) path ["checkout", "-b", branch, "origin/" <> T.unpack target]
@@ -77,7 +76,7 @@ processCherryPick (Arg dataDir) (Arg owner) (Arg repo) (Arg cloneUrl) (Arg srcNu
 It created 'GitEnv' from Forgejo token, runs 'processCherryPick' via 'runGitM' and transfers result to 'processBackport' function from 'Events.Backport' module.
 -}
 cherryPick
-  :: (AppState, MonadIO m)
+  :: (MonadIO m, OrgState)
   => "dataDir" :! FilePath
   -> "owner" :! Text
   -> "repo" :! Text
@@ -87,5 +86,5 @@ cherryPick
   -> "sha" :! Text
   -> m (Either GitError BackportResult)
 cherryPick dataDir owner repo cloneUrl srcNum target sha = do
-  env <- mkGitEnv ?st.config.forgejoToken
-  runGitM env $ processCherryPick dataDir owner repo cloneUrl srcNum target sha
+  env <- mkGitEnv ?org.orgToken
+  runGitM env $ processCherryPick ?org.orgBot dataDir owner repo cloneUrl srcNum target sha

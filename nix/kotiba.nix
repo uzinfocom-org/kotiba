@@ -1,10 +1,10 @@
-{ mkDerivation, aeson, base, bytestring, conduit
-, conduit-combinators, containers, crypton, directory, esqueleto
-, filepath, forgejo, generic-lens, hspec, hspec-wai, http-api-data
-, http-client-tls, http-media, http-types, lens, lib, monad-logger
-, mtl, named, optparse-generic, path-pieces, persistent
-, persistent-postgresql, persistent-records, ram, random
-, resource-pool, safe-exceptions, servant-client
+{ mkDerivation, aeson, barbies, base, bytestring, conduit
+, conduit-combinators, containers, crypton, directory, either
+, esqueleto, filepath, forgejo, generic-lens, hspec, hspec-wai
+, http-api-data, http-client-tls, http-media, http-types, lens, lib
+, monad-logger, mtl, named, optparse-generic, path-pieces
+, persistent, persistent-postgresql, persistent-records, ram
+, random, resource-pool, safe-exceptions, servant-client
 , servant-client-core, servant-server, shower, stm, text, time
 , toml-parser, transformers, typed-process, uuid, vector, wai
 , wai-extra, warp
@@ -16,10 +16,10 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    aeson base bytestring conduit conduit-combinators containers
-    crypton directory esqueleto filepath forgejo generic-lens
-    http-api-data http-client-tls http-media http-types lens
-    monad-logger mtl named optparse-generic path-pieces persistent
+    aeson barbies base bytestring conduit conduit-combinators
+    containers crypton directory either esqueleto filepath forgejo
+    generic-lens http-api-data http-client-tls http-media http-types
+    lens monad-logger mtl named optparse-generic path-pieces persistent
     persistent-postgresql persistent-records ram random resource-pool
     safe-exceptions servant-client servant-client-core servant-server
     shower stm text time toml-parser transformers typed-process uuid

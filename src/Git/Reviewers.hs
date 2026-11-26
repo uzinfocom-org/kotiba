@@ -12,7 +12,7 @@ import Servant (Handler)
 -- This function requests review from given users and tams on a pull request.
 -- It Uses 'addReviewer' method from 'Forgejo' library.
 assignReviewers
-  :: (AppState)
+  :: (AppState, OrgState)
   => "owner" :! Text
   -> "repo" :! Text
   -> "index" :! Int
