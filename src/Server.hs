@@ -124,7 +124,7 @@ run = do
           , trackQueue = queue
           , orgEnvs = orgEnvs
           }
-      settings = setPort c.port $ setHost "*" defaultSettings
+      settings = setPort c.port $ setHost "127.0.0.1" defaultSettings
   migrate' st
   let ?st = st
 
